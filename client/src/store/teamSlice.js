@@ -1,10 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import API_URL from '../config';
 
-export const fetchTeamMembers = createAsyncThunk('team/fetchMembers', async (_, { rejectWithValue }) => {
+export const fetchTeam = createAsyncThunk('team/fetch', async (_, { rejectWithValue }) => {
     try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('/api/team', {
+        const res = await axios.get(`${API_URL}/api/team`, {
             headers: { 'x-auth-token': token }
         });
         return res.data;
@@ -13,10 +14,10 @@ export const fetchTeamMembers = createAsyncThunk('team/fetchMembers', async (_, 
     }
 });
 
-export const addTeamMember = createAsyncThunk('team/addMember', async (userData, { rejectWithValue }) => {
+export const addTeamMember = createAsyncThunk('team/add', async (userData, { rejectWithValue }) => {
     try {
         const token = localStorage.getItem('token');
-        const res = await axios.post('/api/team/register', userData, {
+        const res = await axios.post(`${API_URL}/api/team/register`, userData, {
             headers: { 'x-auth-token': token }
         });
         return res.data;

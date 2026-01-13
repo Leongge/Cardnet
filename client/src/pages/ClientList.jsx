@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchClients } from '../store/clientSlice';
 import { Search, Filter, Send, Users, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import axios from 'axios';
+import API_URL from '../config';
 
 const ClientList = () => {
     const dispatch = useDispatch();
@@ -26,7 +27,7 @@ const ClientList = () => {
     const sendCampaign = async () => {
         if (selectedClients.length === 0) return alert('Select clients first');
         try {
-            await axios.post('/api/campaign/send', {
+            await axios.post(`${API_URL}/api/campaign/send`, {
                 clientIds: selectedClients,
                 subject: 'Hello from Cardnet',
                 body: 'This is a test campaign.'
@@ -42,7 +43,7 @@ const ClientList = () => {
         if (selectedClients.length === 0) return alert('Select clients first');
         try {
             const token = localStorage.getItem('token');
-            await axios.put('/api/clients/share',
+            await axios.put(`${API_URL}/api/clients/share`,
                 { clientIds: selectedClients },
                 { headers: { 'x-auth-token': token } }
             );
@@ -67,7 +68,7 @@ const ClientList = () => {
         try {
             const token = localStorage.getItem('token');
             // Axios delete with body requires 'data' key
-            await axios.delete('/api/clients', {
+            await axios.delete(`${API_URL}/api/clients`, {
                 headers: { 'x-auth-token': token },
                 data: { clientIds: selectedClients, scope }
             });

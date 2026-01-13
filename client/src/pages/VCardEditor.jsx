@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Mail, Phone, MapPin, Globe, Linkedin, Twitter, Facebook, Instagram, Share2, UserPlus, Download, Briefcase, ChevronRight, Smartphone, Save, Eye } from 'lucide-react';
+import API_URL from '../config';
 
 const VCardEditor = () => {
     const [formData, setFormData] = useState({
@@ -32,7 +33,7 @@ const VCardEditor = () => {
 
     const fetchProfile = async () => {
         try {
-            const res = await axios.get('/api/vcard/profile', {
+            const res = await axios.get(`${API_URL}/api/vcard/profile`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             if (res.data) {
@@ -67,7 +68,7 @@ const VCardEditor = () => {
 
         setUploading(true);
         try {
-            const res = await axios.post('/api/vcard/upload', uploadData, {
+            const res = await axios.post(`${API_URL}/api/vcard/upload`, uploadData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -105,7 +106,7 @@ const VCardEditor = () => {
         setSaving(true);
         setMessage(null);
         try {
-            await axios.put('/api/vcard/profile', formData, {
+            await axios.put(`${API_URL}/api/vcard/profile`, formData, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             setMessage({ type: 'success', text: 'vCard Profile Updated Successfully' });
