@@ -21,11 +21,25 @@ export const register = createAsyncThunk('auth/register', async (userData, { rej
     }
 });
 
+export const loadUser = createAsyncThunk('auth/loadUser', async (_, { rejectWithValue }) => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) return rejectWithValue({ msg: 'No token' });
+
+        const res = await axios.get(`${API_URL}/api/auth/user`, {
+            headers: { 'x-auth-token': token }
+        });
+        return res.data;
+    } catch (err) {
+        return rejectWithValue(err.response?.data || { msg: 'Failed to load user' });
+    }
+});
+
 const initialState = {
     token: localStorage.getItem('token'),
-    isAuthenticated: !!localStorage.getItem('token'), // Basic check
+    isAuthenticated: !!localStorage.getItem('token'),
     loading: false,
-    user: null, // Should fetch user on load if token exists
+    user: JSON.parse(localStorage.getItem('user') || 'null'),
     error: null
 };
 
@@ -35,6 +49,7 @@ const authSlice = createSlice({
     reducers: {
         logout: (state) => {
             localStorage.removeItem('token');
+            localStorage.removeItem('user');
             state.token = null;
             state.isAuthenticated = false;
             state.user = null;
@@ -45,6 +60,7 @@ const authSlice = createSlice({
             .addCase(login.pending, (state) => { state.loading = true; })
             .addCase(login.fulfilled, (state, action) => {
                 localStorage.setItem('token', action.payload.token);
+                localStorage.setItem('user', JSON.stringify(action.payload.user));
                 state.token = action.payload.token;
                 state.isAuthenticated = true;
                 state.user = action.payload.user;
@@ -54,12 +70,26 @@ const authSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
-            // Register logic similar to login
             .addCase(register.fulfilled, (state, action) => {
                 localStorage.setItem('token', action.payload.token);
+                localStorage.setItem('user', JSON.stringify(action.payload.user));
                 state.token = action.payload.token;
                 state.isAuthenticated = true;
                 state.user = action.payload.user;
+                state.loading = false;
+            })
+            .addCase(loadUser.fulfilled, (state, action) => {
+                localStorage.setItem('user', JSON.stringify(action.payload));
+                state.user = action.payload;
+                state.isAuthenticated = true;
+                state.loading = false;
+            })
+            .addCase(loadUser.rejected, (state) => {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                state.token = null;
+                state.isAuthenticated = false;
+                state.user = null;
                 state.loading = false;
             });
     }

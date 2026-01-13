@@ -41,4 +41,22 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// Get User by Token
+router.get('/user', async (req, res) => {
+    try {
+        const token = req.header('x-auth-token');
+        if (!token) return res.status(401).json({ msg: 'No token, authorization denied' });
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+        const user = await User.findById(decoded.user.id).select('-password_hash');
+
+        if (!user) return res.status(404).json({ msg: 'User not found' });
+
+        res.json({ id: user.id, name: user.name, email: user.email, role: user.role, corporate_id: user.corporate_id });
+    } catch (err) {
+        console.error('Get user error:', err.message);
+        res.status(401).json({ msg: 'Token is not valid' });
+    }
+});
+
 module.exports = router;
