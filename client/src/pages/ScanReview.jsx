@@ -30,7 +30,6 @@ const ScanReview = () => {
 
     const startCamera = async () => {
         try {
-            console.log('Requesting camera access...');
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: {
                     facingMode: 'environment',
@@ -38,41 +37,27 @@ const ScanReview = () => {
                     height: { ideal: 1080 }
                 }
             });
-            console.log('Camera stream obtained:', stream);
             streamRef.current = stream;
-
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
-                console.log('Video srcObject set');
-
-                // Wait for metadata to load before playing
-                videoRef.current.onloadedmetadata = async () => {
-                    console.log('Video metadata loaded');
-                    try {
-                        await videoRef.current.play();
-                        console.log('Video playing');
-                    } catch (playError) {
-                        console.error('Video play error:', playError);
-                    }
-                };
+                // Explicitly play the video
+                try {
+                    await videoRef.current.play();
+                } catch (playError) {
+                    console.error('Video play error:', playError);
+                }
             }
             setCameraActive(true);
         } catch (err) {
             console.error('Camera access error:', err);
-            alert(`Unable to access camera: ${err.message}. Please check permissions.`);
+            alert('Unable to access camera. Please check permissions.');
         }
     };
 
     const stopCamera = () => {
         if (streamRef.current) {
-            streamRef.current.getTracks().forEach(track => {
-                console.log('Stopping track:', track.label);
-                track.stop();
-            });
+            streamRef.current.getTracks().forEach(track => track.stop());
             streamRef.current = null;
-        }
-        if (videoRef.current) {
-            videoRef.current.srcObject = null;
         }
         setCameraActive(false);
     };
@@ -201,7 +186,6 @@ const ScanReview = () => {
                                 ref={videoRef}
                                 autoPlay
                                 playsInline
-                                muted
                                 className="w-full h-auto"
                             />
                             <button
