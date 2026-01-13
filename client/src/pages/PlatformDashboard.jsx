@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { Building, Plus, ShieldCheck } from 'lucide-react';
+import API_URL from '../config';
 
 const PlatformDashboard = () => {
     const { user } = useSelector(state => state.auth);
@@ -18,7 +19,7 @@ const PlatformDashboard = () => {
     const fetchCorporations = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('/api/platform/corporations', {
+            const res = await axios.get(`${API_URL}/api/platform/corporations`, {
                 headers: { 'x-auth-token': token }
             });
             setCorporations(res.data);
@@ -39,7 +40,7 @@ const PlatformDashboard = () => {
         e.preventDefault();
         try {
             const token = localStorage.getItem('token');
-            await axios.post('/api/platform/create-corporation', formData, {
+            await axios.post(`${API_URL}/api/platform/create-corporation`, formData, {
                 headers: { 'x-auth-token': token }
             });
             alert('Corporation Created Successfully!');
