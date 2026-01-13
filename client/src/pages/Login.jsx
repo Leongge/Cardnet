@@ -22,8 +22,8 @@ const Login = () => {
         // Login Only
         const res = await dispatch(login({ email: formData.email, password: formData.password }));
         if (!res.error) {
-            // Redirect based on role if needed, but Dashboard is fine
-            navigate('/dashboard');
+            // Redirect to app dashboard
+            navigate('/app/dashboard');
         }
     };
 

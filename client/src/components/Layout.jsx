@@ -53,32 +53,32 @@ const Layout = () => {
                 </div>
 
                 <nav className="flex-1 p-4 space-y-2">
-                    <Link to="/dashboard" onClick={closeSidebar} className="flex items-center space-x-3 p-3 rounded hover:bg-white/10">
+                    <Link to="/app/dashboard" onClick={closeSidebar} className="flex items-center space-x-3 p-3 rounded hover:bg-white/10">
                         <LayoutDashboard size={20} />
                         <span>Dashboard</span>
                     </Link>
-                    <Link to="/clients" onClick={closeSidebar} className="flex items-center space-x-3 p-3 rounded hover:bg-white/10">
+                    <Link to="/app/clients" onClick={closeSidebar} className="flex items-center space-x-3 p-3 rounded hover:bg-white/10">
                         <Users size={20} />
                         <span>Clients</span>
                     </Link>
-                    <Link to="/vcard-editor" onClick={closeSidebar} className="flex items-center space-x-3 p-3 rounded hover:bg-white/10 text-blue-400">
+                    <Link to="/app/vcard-editor" onClick={closeSidebar} className="flex items-center space-x-3 p-3 rounded hover:bg-white/10 text-blue-400">
                         <Users size={20} />
                         <span>My VCard</span>
                     </Link>
                     <div className="pt-4 border-t border-gray-700">
                         {user?.role === 'CorporateAdmin' && (
-                            <Link to="/team" onClick={closeSidebar} className="flex items-center space-x-3 p-3 rounded hover:bg-white/10 text-yellow-500">
+                            <Link to="/app/team" onClick={closeSidebar} className="flex items-center space-x-3 p-3 rounded hover:bg-white/10 text-yellow-500">
                                 <Users size={20} />
                                 <span>Manage Team</span>
                             </Link>
                         )}
                         {user?.role === 'Admin' && (
-                            <Link to="/platform" onClick={closeSidebar} className="flex items-center space-x-3 p-3 rounded hover:bg-white/10 text-red-400">
+                            <Link to="/app/platform" onClick={closeSidebar} className="flex items-center space-x-3 p-3 rounded hover:bg-white/10 text-red-400">
                                 <ShieldCheck size={20} />
                                 <span>Platform Admin</span>
                             </Link>
                         )}
-                        <Link to="/review" onClick={closeSidebar} className="flex items-center space-x-3 p-3 rounded hover:bg-white/10 text-gray-400">
+                        <Link to="/app/review" onClick={closeSidebar} className="flex items-center space-x-3 p-3 rounded hover:bg-white/10 text-gray-400">
                             <Camera size={20} />
                             <span>Scan (Debug)</span>
                         </Link>

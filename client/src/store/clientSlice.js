@@ -1,15 +1,13 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import API_URL from '../config';
 
-export const fetchClients = createAsyncThunk('clients/fetch', async (scope, { getState, rejectWithValue }) => {
-    try {
-        const { token } = getState().auth;
-        const config = { headers: { 'x-auth-token': token } };
-        const res = await axios.get(`/api/clients?scope=${scope || 'private'}`, config);
-        return res.data;
-    } catch (err) {
-        return rejectWithValue(err.response.data);
-    }
+export const fetchClients = createAsyncThunk('clients/fetchClients', async (scope = 'private') => {
+    const token = localStorage.getItem('token');
+    const res = await axios.get(`${API_URL}/api/clients?scope=${scope}`, {
+        headers: { 'x-auth-token': token }
+    });
+    return res.data;
 });
 
 const clientSlice = createSlice({

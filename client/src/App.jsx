@@ -13,10 +13,13 @@ function App() {
     return (
         <Router>
             <Routes>
+                {/* Root path shows Login page */}
+                <Route path="/" element={<Login />} />
                 <Route path="/login" element={<Login />} />
 
-                <Route path="/" element={<Layout />}>
-                    <Route index element={<Navigate to="/dashboard" replace />} />
+                {/* Protected routes with Layout */}
+                <Route path="/app" element={<Layout />}>
+                    <Route index element={<Navigate to="/app/dashboard" replace />} />
                     <Route path="dashboard" element={<Dashboard />} />
                     <Route path="review" element={<ScanReview />} />
                     <Route path="clients" element={<ClientList />} />
@@ -24,6 +27,8 @@ function App() {
                     <Route path="platform" element={<PlatformDashboard />} />
                     <Route path="vcard-editor" element={<VCardEditor />} />
                 </Route>
+
+                {/* Public vCard route */}
                 <Route path="/u/:slug" element={<PublicVCard />} />
             </Routes>
         </Router>

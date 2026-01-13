@@ -130,7 +130,7 @@ const ScanReview = () => {
 
             console.log('Sending client data:', clientData);
 
-            await axios.post('/api/clients', clientData, {
+            await axios.post(`${API_URL}/api/clients`, clientData, {
                 headers: { 'x-auth-token': token }
             });
 
