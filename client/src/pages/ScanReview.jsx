@@ -31,11 +31,21 @@ const ScanReview = () => {
     const startCamera = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment' }
+                video: {
+                    facingMode: 'environment',
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 }
+                }
             });
             streamRef.current = stream;
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
+                // Explicitly play the video
+                try {
+                    await videoRef.current.play();
+                } catch (playError) {
+                    console.error('Video play error:', playError);
+                }
             }
             setCameraActive(true);
         } catch (err) {
