@@ -80,7 +80,7 @@ const Layout = () => {
                         )}
                         <Link to="/app/review" onClick={closeSidebar} className="flex items-center space-x-3 p-3 rounded hover:bg-white/10 text-gray-400">
                             <Camera size={20} />
-                            <span>Scan (Debug)</span>
+                            <span>Scan Business Cards</span>
                         </Link>
                     </div>
                 </nav>
