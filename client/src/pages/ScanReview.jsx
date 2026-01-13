@@ -30,27 +30,36 @@ const ScanReview = () => {
 
     const startCamera = async () => {
         try {
+            console.log('Requesting camera access...');
             const stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode: 'environment',
-                    width: { ideal: 1920 },
-                    height: { ideal: 1080 }
-                }
+                video: { facingMode: 'environment' }
             });
+
+            console.log('Camera stream obtained');
             streamRef.current = stream;
+
             if (videoRef.current) {
+                console.log('Setting video srcObject...');
                 videoRef.current.srcObject = stream;
-                // Explicitly play the video
-                try {
-                    await videoRef.current.play();
-                } catch (playError) {
-                    console.error('Video play error:', playError);
-                }
+
+                // Wait for metadata to load before playing
+                videoRef.current.onloadedmetadata = () => {
+                    console.log('Video metadata loaded, dimensions:',
+                        videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
+                    videoRef.current.play()
+                        .then(() => {
+                            console.log('Video playing');
+                            setCameraActive(true);
+                        })
+                        .catch(err => {
+                            console.error('Play error:', err);
+                            alert('Failed to play video: ' + err.message);
+                        });
+                };
             }
-            setCameraActive(true);
         } catch (err) {
-            console.error('Camera access error:', err);
-            alert('Unable to access camera. Please check permissions.');
+            console.error('Camera error:', err);
+            alert('Camera access failed: ' + err.message);
         }
     };
 
