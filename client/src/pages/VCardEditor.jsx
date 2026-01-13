@@ -1,0 +1,543 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Mail, Phone, MapPin, Globe, Linkedin, Twitter, Facebook, Instagram, Share2, UserPlus, Download, Briefcase, ChevronRight, Smartphone, Save, Eye } from 'lucide-react';
+
+const VCardEditor = () => {
+    const [formData, setFormData] = useState({
+        name: '',
+        position: '',
+        company_name: '',
+        company_address: '',
+        company_website: '',
+        email: '',
+        phone: '',
+        bio: '',
+        vcard_slug: '',
+        profile_picture: '',
+        social_links: {
+            linkedin: '',
+            twitter: '',
+            facebook: '',
+            instagram: ''
+        }
+    });
+
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [message, setMessage] = useState(null);
+
+    useEffect(() => {
+        fetchProfile();
+    }, []);
+
+    const fetchProfile = async () => {
+        try {
+            const res = await axios.get('/api/vcard/profile', {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            if (res.data) {
+                // Ensure social_links object exists even if backend returns partial data
+                const mergedData = {
+                    ...res.data,
+                    social_links: {
+                        linkedin: '',
+                        twitter: '',
+                        facebook: '',
+                        instagram: '',
+                        ...(res.data.social_links || {})
+                    }
+                };
+                setFormData(mergedData);
+            }
+            setLoading(false);
+        } catch (err) {
+            console.error(err);
+            setLoading(false);
+        }
+    };
+
+    const [uploading, setUploading] = useState(false);
+
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const uploadData = new FormData();
+        uploadData.append('image', file);
+
+        setUploading(true);
+        try {
+            const res = await axios.post('/api/vcard/upload', uploadData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            setFormData(prev => ({ ...prev, profile_picture: res.data.url }));
+            setMessage({ type: 'success', text: 'Image uploaded successfully' });
+        } catch (err) {
+            console.error(err);
+            setMessage({ type: 'error', text: 'Image upload failed' });
+        } finally {
+            setUploading(false);
+            setTimeout(() => setMessage(null), 3000);
+        }
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        if (name.startsWith('social_')) {
+            const socialPlatform = name.split('_')[1];
+            setFormData(prev => ({
+                ...prev,
+                social_links: {
+                    ...prev.social_links,
+                    [socialPlatform]: value
+                }
+            }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setSaving(true);
+        setMessage(null);
+        try {
+            await axios.put('/api/vcard/profile', formData, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            setMessage({ type: 'success', text: 'vCard Profile Updated Successfully' });
+        } catch (err) {
+            setMessage({ type: 'error', text: 'Failed to update profile' });
+        } finally {
+            setSaving(false);
+            setTimeout(() => setMessage(null), 3000);
+        }
+    };
+
+    if (loading) return (
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+            <div className="w-10 h-10 border-4 border-slate-200 border-t-amber-500 rounded-full animate-spin"></div>
+        </div>
+    );
+
+    return (
+        <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-amber-100 selection:text-amber-900">
+            <div className="flex flex-col lg:flex-row h-screen overflow-hidden">
+
+                {/* Editor Panel */}
+                <div className="flex-1 overflow-y-auto p-8 lg:p-12 border-r border-slate-200">
+                    <div className="max-w-3xl mx-auto">
+
+                        <div className="flex items-center justify-between mb-8">
+                            <div>
+                                <h1 className="text-3xl font-bold text-slate-900 tracking-tight">vCard Editor</h1>
+                                <p className="text-slate-500 mt-1">Manage your digital business card details.</p>
+                            </div>
+                            <div className="hidden md:flex items-center gap-2 text-sm text-amber-600 font-medium bg-amber-50 px-3 py-1 rounded-full border border-amber-100">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                                </span>
+                                Live Sync Active
+                            </div>
+                        </div>
+
+                        {message && (
+                            <div className={`p-4 rounded-xl mb-8 flex items-center gap-3 ${message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>
+                                <div className={`w-2 h-2 rounded-full ${message.type === 'success' ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
+                                {message.text}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSubmit} className="space-y-8">
+
+                            {/* Identity Section */}
+                            <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-6 pb-4 border-b border-slate-100">
+                                    <UserPlus size={20} className="text-amber-500" />
+                                    Identity & Role
+                                </h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="md:col-span-2 space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Profile Link / Username</label>
+                                        <div className="flex rounded-lg border border-slate-200 bg-slate-50 overflow-hidden focus-within:ring-2 focus-within:ring-amber-500/20 focus-within:border-amber-500 transition-all">
+                                            <div className="px-4 py-3 bg-slate-100 border-r border-slate-200 text-slate-500 text-sm font-medium">
+                                                cardnet.com/u/
+                                            </div>
+                                            <input
+                                                type="text"
+                                                name="vcard_slug"
+                                                value={formData.vcard_slug || ''}
+                                                onChange={handleChange}
+                                                className="flex-1 bg-transparent px-4 py-3 text-slate-900 outline-none placeholder:text-slate-400"
+                                                placeholder="john-doe"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Full Name</label>
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleChange}
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-slate-400"
+                                            placeholder="Ex. John Doe"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Position / Title</label>
+                                        <input
+                                            type="text"
+                                            name="position"
+                                            value={formData.position}
+                                            onChange={handleChange}
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-slate-400"
+                                            placeholder="Ex. Chief Executive Officer"
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2 space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Profile Picture</label>
+                                        <div className="flex items-center gap-4">
+                                            <div className="relative w-16 h-16 rounded-full bg-slate-100 overflow-hidden border border-slate-200 shrink-0">
+                                                {formData.profile_picture ? (
+                                                    <img src={formData.profile_picture} alt="Profile" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-slate-400">
+                                                        <UserPlus size={24} />
+                                                    </div>
+                                                )}
+                                                {uploading && (
+                                                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex-1">
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={handleImageUpload}
+                                                    id="profile-upload"
+                                                    className="hidden"
+                                                />
+                                                <label
+                                                    htmlFor="profile-upload"
+                                                    className={`inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
+                                                >
+                                                    <Download size={16} className="rotate-180" /> {/* Using Download icon rotated as Upload */}
+                                                    Upload New Photo
+                                                </label>
+                                                <p className="text-[10px] text-slate-400 mt-1">Recommended: Square JPG/PNG, max 5MB.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="md:col-span-2 space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Professional Bio</label>
+                                        <textarea
+                                            name="bio"
+                                            value={formData.bio}
+                                            onChange={handleChange}
+                                            rows="3"
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-slate-400 resize-none"
+                                            placeholder="A brief introduction..."
+                                        />
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Contact Section */}
+                            <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-6 pb-4 border-b border-slate-100">
+                                    <Briefcase size={20} className="text-amber-500" />
+                                    Company & Contact
+                                </h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Company Name</label>
+                                        <input
+                                            type="text"
+                                            name="company_name"
+                                            value={formData.company_name}
+                                            onChange={handleChange}
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-slate-400"
+                                            placeholder="Ex. Cardnet Corp"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Website</label>
+                                        <input
+                                            type="text"
+                                            name="company_website"
+                                            value={formData.company_website}
+                                            onChange={handleChange}
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-slate-400"
+                                            placeholder="https://..."
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Phone</label>
+                                        <input
+                                            type="text"
+                                            name="phone"
+                                            value={formData.phone}
+                                            onChange={handleChange}
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-slate-400"
+                                            placeholder="+1 (555) 000-0000"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Email</label>
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-slate-400"
+                                            placeholder="you@company.com"
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2 space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Address</label>
+                                        <input
+                                            type="text"
+                                            name="company_address"
+                                            value={formData.company_address}
+                                            onChange={handleChange}
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-slate-400"
+                                            placeholder="123 Business Blvd, Suite 100"
+                                        />
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Social Section */}
+                            <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-6 pb-4 border-b border-slate-100">
+                                    <Share2 size={20} className="text-amber-500" />
+                                    Social Presence
+                                </h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">LinkedIn</label>
+                                        <input
+                                            type="text"
+                                            name="social_linkedin"
+                                            value={formData.social_links.linkedin}
+                                            onChange={handleChange}
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-slate-400"
+                                            placeholder="Profile URL"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Twitter / X</label>
+                                        <input
+                                            type="text"
+                                            name="social_twitter"
+                                            value={formData.social_links.twitter}
+                                            onChange={handleChange}
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-slate-400"
+                                            placeholder="Profile URL"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Facebook</label>
+                                        <input
+                                            type="text"
+                                            name="social_facebook"
+                                            value={formData.social_links.facebook}
+                                            onChange={handleChange}
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-slate-400"
+                                            placeholder="Profile URL"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Instagram</label>
+                                        <input
+                                            type="text"
+                                            name="social_instagram"
+                                            value={formData.social_links.instagram}
+                                            onChange={handleChange}
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-slate-400"
+                                            placeholder="Profile URL"
+                                        />
+                                    </div>
+                                </div>
+                            </section>
+
+                            <div className="pt-4 flex items-center justify-end gap-4">
+                                <a
+                                    href={`/u/${formData.vcard_slug || formData.url_slug || 'preview'}`}
+                                    target="_blank"
+                                    className="flex items-center gap-2 px-6 py-3 text-slate-600 font-semibold hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors"
+                                >
+                                    <Eye size={20} />
+                                    View Live Card
+                                </a>
+                                <button
+                                    type="submit"
+                                    disabled={saving}
+                                    className="flex items-center gap-2 bg-slate-900 text-white px-8 py-3 rounded-xl font-bold tracking-wide hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20 disabled:opacity-50"
+                                >
+                                    {saving ? (
+                                        <>
+                                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                            SAVING...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Save size={20} />
+                                            SAVE CHANGES
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div className="h-24"></div>
+                </div>
+
+                {/* Live Preview Panel */}
+                <div className="hidden lg:flex w-[500px] bg-slate-100 flex-col items-center justify-center p-8 border-l border-slate-200 relative">
+                    {/* Background Pattern */}
+                    <div className="absolute inset-0 opacity-40 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px]"></div>
+
+                    <div className="relative z-10 text-center mb-8">
+                        <h3 className="text-slate-500 text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2">
+                            <Smartphone size={16} />
+                            Live Preview
+                        </h3>
+                    </div>
+
+                    {/* Device Frame */}
+                    <div className="relative mx-auto border-8 border-slate-900 bg-slate-900 rounded-[3rem] h-[700px] w-[360px] shadow-2xl overflow-hidden ring-1 ring-slate-900/5">
+                        <div className="h-full w-full bg-slate-50 relative overflow-y-auto custom-scrollbar">
+
+                            {/* ----- PREVIEW CONTENT STARTS (Matches PublicVCard Light) ----- */}
+
+                            {/* Header / Cover */}
+                            <div className="h-44 relative bg-slate-900 overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-950"></div>
+                                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+                            </div>
+
+                            <div className="px-6 pb-12 -mt-20 relative flex-1 flex flex-col">
+
+                                {/* Profile Picture */}
+                                <div className="relative mx-auto w-32 h-32 mb-4">
+                                    <div className="absolute inset-0 rounded-full bg-white p-[3px] shadow-xl">
+                                        <div className="w-full h-full rounded-full bg-slate-100 overflow-hidden border border-slate-100">
+                                            {formData.profile_picture ? (
+                                                <img src={formData.profile_picture} alt="Preview" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-4xl bg-slate-100 text-slate-400">
+                                                    {formData.name?.charAt(0)}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Intro */}
+                                <div className="text-center mb-8">
+                                    <h1 className="text-xl font-bold text-slate-900 mb-1 tracking-tight">{formData.name || 'Your Name'}</h1>
+                                    <p className="text-amber-600 text-[10px] font-bold uppercase tracking-widest mb-1">{formData.position || 'Your Position'}</p>
+                                    <p className="text-slate-500 text-xs font-medium">{formData.company_name || 'Company Name'}</p>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="grid grid-cols-2 gap-3 mb-8">
+                                    <button className="flex items-center justify-center gap-2 bg-slate-900 text-white py-3 rounded-xl font-semibold text-xs shadow-lg shadow-slate-900/20">
+                                        <Download size={14} />
+                                        Save
+                                    </button>
+                                    <button className="flex items-center justify-center gap-2 bg-white text-slate-900 border border-slate-200 py-3 rounded-xl font-semibold text-xs shadow-sm">
+                                        <UserPlus size={14} />
+                                        Connect
+                                    </button>
+                                </div>
+
+                                {/* Info List */}
+                                <div className="space-y-3 mb-8">
+                                    {formData.bio && (
+                                        <div className="text-center mb-6 px-2">
+                                            <p className="text-slate-500 text-xs leading-relaxed italic border-l-2 border-amber-200 pl-3 py-1 text-left bg-slate-50/50 rounded-r-lg">
+                                                "{formData.bio}"
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {formData.phone && (
+                                        <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                                            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-slate-700 border border-slate-200 shadow-sm">
+                                                <Phone size={14} />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-[9px] text-slate-400 uppercase font-bold tracking-wider mb-0.5">Mobile</p>
+                                                <p className="text-slate-800 font-medium text-xs">{formData.phone}</p>
+                                            </div>
+                                            <ChevronRight size={14} className="text-slate-300" />
+                                        </div>
+                                    )}
+
+                                    {formData.email && (
+                                        <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                                            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-slate-700 border border-slate-200 shadow-sm">
+                                                <Mail size={14} />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-[9px] text-slate-400 uppercase font-bold tracking-wider mb-0.5">Email</p>
+                                                <p className="text-slate-800 font-medium text-xs">{formData.email}</p>
+                                            </div>
+                                            <ChevronRight size={14} className="text-slate-300" />
+                                        </div>
+                                    )}
+
+                                    {formData.company_website && (
+                                        <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                                            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-slate-700 border border-slate-200 shadow-sm">
+                                                <Globe size={14} />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-[9px] text-slate-400 uppercase font-bold tracking-wider mb-0.5">Website</p>
+                                                <p className="text-slate-800 font-medium text-xs truncate max-w-[140px]">{formData.company_website.replace(/^https?:\/\//, '')}</p>
+                                            </div>
+                                            <ChevronRight size={14} className="text-slate-300" />
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Socials Placeholder for preview */}
+                                <div className="flex justify-center gap-4 pt-6 border-t border-slate-100 mb-6">
+                                    <Linkedin size={18} className="text-slate-300" />
+                                    <Twitter size={18} className="text-slate-300" />
+                                    <Facebook size={18} className="text-slate-300" />
+                                    <Instagram size={18} className="text-slate-300" />
+                                </div>
+
+                                <div className="text-center pb-6">
+                                    <div className="inline-flex items-center justify-center gap-2 px-3 py-1 bg-slate-50 rounded-full border border-slate-100">
+                                        <span className="text-[8px] text-slate-400 font-medium uppercase tracking-widest">Cardnet Business</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* ----- PREVIEW CONTENT ENDS ----- */}
+
+                        </div>
+                        {/* Device Notch & Home Bar props */}
+                        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-slate-900 rounded-b-xl z-20"></div>
+                        <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-slate-800 rounded-full z-20"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    );
+};
+
+export default VCardEditor;

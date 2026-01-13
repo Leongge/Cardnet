@@ -1,0 +1,10 @@
+--- STARTING VCARD TEST ---
+Mongo Connected
+FOUND REAL ID: 694aaf519edade8a6ed6e024
+1. Updating profile for ID: 694aaf519edade8a6ed6e024 with slug: leongge...
+   Update Status: 200
+   Update Data: Success
+2. Fetching public VCard for slug: leongge...
+   Fetch Status: 200
+   Fetch Name: Leong Ge
+--- SUCCESS_ID:694aaf519edade8a6ed6e024 ---

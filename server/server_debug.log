@@ -1,0 +1,74 @@
+2026-01-06T14:44:31.187Z - PUT /profile called
+2026-01-06T14:44:31.190Z - Updating user: undefined
+2026-01-06T14:44:31.191Z - Updates: {"name":"Khor Chun Leong","position":"","company_name":"","company_address":"17, JALAN TIGA","company_website":"","phone":"+606017459440","bio":"","vcard_slug":"leongge","profile_picture":"","social_links":{"linkedin":"","twitter":"","facebook":"","instagram":""}}
+2026-01-06T14:44:31.358Z - Success
+2026-01-06T14:48:42.265Z - PUT /profile called
+2026-01-06T14:48:42.267Z - Updating user: undefined
+2026-01-06T14:48:42.268Z - Updates: {"name":"Khor Chun Leong","position":"","company_name":"","company_address":"17, JALAN TIGA","company_website":"","phone":"+606017459440","bio":"","vcard_slug":"leongge","profile_picture":"","social_links":{"linkedin":"","twitter":"","facebook":"","instagram":""}}
+2026-01-06T14:48:42.389Z - Success
+2026-01-06T15:08:19.797Z - PUT /profile called
+2026-01-06T15:08:19.800Z - Updating user: undefined
+2026-01-06T15:08:19.801Z - Updates: {"name":"Khor Chun Leong","position":"","company_name":"","company_address":"","company_website":"","phone":"","bio":"","vcard_slug":"leongge","profile_picture":"","social_links":{"linkedin":"","twitter":"","facebook":"","instagram":""}}
+2026-01-06T15:08:19.926Z - Success
+2026-01-06T15:10:56.324Z - PUT /profile called
+2026-01-06T15:10:56.326Z - Updating user: undefined
+2026-01-06T15:10:56.327Z - Updates: {"name":"","position":"","company_name":"","company_address":"","company_website":"","phone":"","bio":"","vcard_slug":"","profile_picture":"","social_links":{"linkedin":"","twitter":"","facebook":"","instagram":""}}
+2026-01-06T15:10:56.384Z - Success
+2026-01-06T15:11:22.681Z - PUT /profile called
+2026-01-06T15:11:22.683Z - Updating user: undefined
+2026-01-06T15:11:22.683Z - Updates: {"name":"Khor Chun Leong","position":"","company_name":"","company_address":"","company_website":"","phone":"","bio":"","vcard_slug":"leongge","profile_picture":"","social_links":{"linkedin":"","twitter":"","facebook":"","instagram":""}}
+2026-01-06T15:11:22.815Z - Success
+2026-01-06T15:12:00.206Z - PUT /profile called
+2026-01-06T15:12:00.207Z - Updating user: undefined
+2026-01-06T15:12:00.208Z - Updates: {"name":"Khor Chun Leong","position":"","company_name":"","company_address":"","company_website":"","phone":"","bio":"","vcard_slug":"leongge","profile_picture":"","social_links":{"linkedin":"","twitter":"","facebook":"","instagram":""}}
+2026-01-06T15:12:00.402Z - Success
+2026-01-06T15:19:17.107Z - PUT /profile called
+2026-01-06T15:19:17.109Z - Updating user: undefined
+2026-01-06T15:19:17.110Z - Updates: {"name":"Khor Chun Leong","position":"","company_name":"","company_address":"","company_website":"","phone":"","bio":"","vcard_slug":"leongge","profile_picture":"","social_links":{"linkedin":"","twitter":"","facebook":"","instagram":""}}
+2026-01-06T15:19:17.230Z - Success
+2026-01-06T15:24:55.216Z - PUT /profile called
+2026-01-06T15:24:55.217Z - Error: jwt malformed
+2026-01-06T15:28:01.939Z - PUT /profile called
+2026-01-06T15:28:01.943Z - Updating user: undefined
+2026-01-06T15:28:01.944Z - Updates: {"name":"Admin Test User","position":"","company_name":"","company_address":"","company_website":"","phone":"","bio":"","vcard_slug":"admin-test","profile_picture":"","social_links":{"linkedin":"","twitter":"","facebook":"","instagram":""}}
+2026-01-06T15:28:02.061Z - Success
+2026-01-06T15:33:11.971Z - PUT /profile called
+2026-01-06T15:33:11.974Z - Updating user: undefined
+2026-01-06T15:33:11.974Z - Updates: {"name":"Admin","position":"","company_name":"","company_address":"","company_website":"","phone":"","bio":"","vcard_slug":"admin","profile_picture":"","social_links":{"linkedin":"","twitter":"","facebook":"","instagram":""}}
+2026-01-06T15:33:12.116Z - Success
+2026-01-06T15:35:55.016Z - PUT /profile called
+2026-01-06T15:35:55.021Z - Updating user: undefined
+2026-01-06T15:35:55.022Z - Updates: {"name":"","position":"","company_name":"","company_address":"","company_website":"","phone":"","bio":"","vcard_slug":"","profile_picture":"","social_links":{"linkedin":"","twitter":"","facebook":"","instagram":""}}
+2026-01-06T15:35:55.108Z - Success
+2026-01-06T15:36:21.391Z - PUT /profile called
+2026-01-06T15:36:21.393Z - Updating user: undefined
+2026-01-06T15:36:21.393Z - Updates: {"name":"","position":"","company_name":"","company_address":"","company_website":"","phone":"","bio":"","vcard_slug":"","profile_picture":"","social_links":{"linkedin":"","twitter":"","facebook":"","instagram":""}}
+2026-01-06T15:36:21.455Z - Success
+2026-01-06T15:39:15.325Z - PUT /profile called
+2026-01-06T15:39:15.329Z - Updating user: undefined
+2026-01-06T15:39:15.330Z - Updates: {"name":"Test User","position":"Tester","company_name":"","company_address":"","company_website":"","phone":"","bio":"","vcard_slug":"testuser","profile_picture":"","social_links":{"linkedin":"","twitter":"","facebook":"","instagram":""}}
+2026-01-06T15:39:15.440Z - Success
+2026-01-06T15:42:28.995Z - PUT /profile called
+2026-01-06T15:42:28.998Z - Updating user: undefined
+2026-01-06T15:42:29.001Z - Updates: {"name":"leong","position":"","company_name":"","company_address":"","company_website":"","phone":"","bio":"","vcard_slug":"leongge","profile_picture":"","social_links":{"linkedin":"","twitter":"","facebook":"","instagram":""}}
+2026-01-06T15:42:29.116Z - Success
+2026-01-06T15:43:12.162Z - PUT /profile called
+2026-01-06T15:43:12.164Z - Updating user: undefined
+2026-01-06T15:43:12.164Z - Updates: {"name":"leong","position":"","company_name":"","company_address":"","company_website":"","phone":"","bio":"","vcard_slug":"leongge","profile_picture":"","social_links":{"linkedin":"","twitter":"","facebook":"","instagram":""}}
+2026-01-06T15:43:12.268Z - Success
+2026-01-06T15:43:12.894Z - PUT /profile called
+2026-01-06T15:43:12.896Z - Updating user: undefined
+2026-01-06T15:43:12.897Z - Updates: {"name":"leong","position":"","company_name":"","company_address":"","company_website":"","phone":"","bio":"","vcard_slug":"leongge","profile_picture":"","social_links":{"linkedin":"","twitter":"","facebook":"","instagram":""}}
+2026-01-06T15:43:13.010Z - Success
+2026-01-06T15:45:28.808Z - PUT /profile called
+2026-01-06T15:45:28.810Z - Updating user: undefined
+2026-01-06T15:45:28.811Z - Updates: {"name":"test","position":"","company_name":"","company_address":"","company_website":"","phone":"","bio":"","vcard_slug":"leongge-test","profile_picture":"","social_links":{"linkedin":"","twitter":"","facebook":"","instagram":""}}
+2026-01-06T15:45:28.935Z - Success
+2026-01-06T15:48:27.291Z - PUT /profile called
+2026-01-06T15:48:27.293Z - Updating user: 695d1d0a2eec9777afb175b4
+2026-01-06T15:48:27.293Z - Updates: {"name":"Khor Chun Leong","vcard_slug":"leongge","theme_color":"#3b82f6","social_links":{"linkedin":"","twitter":"","facebook":"","instagram":""}}
+2026-01-06T15:48:27.431Z - Success
+2026-01-11T14:35:09.618Z - PUT /profile called
+2026-01-11T14:35:09.621Z - Updating user: 695d1d0a2eec9777afb175b4
+2026-01-11T14:35:09.622Z - Updates: {"social_links":{"linkedin":"","twitter":"","facebook":"","instagram":""},"name":"Khor Chun Leong","vcard_slug":"leongge","theme_color":"#3b82f6","profile_picture":"http://localhost:5002/uploads/image-1768142106047-854473019.png"}
+2026-01-11T14:35:09.855Z - Success
