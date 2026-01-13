@@ -14,7 +14,7 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/cardnet';
 const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:3000',
-    'https://cardnet.vercel.app/', // Update this after Vercel deployment
+    'https://cardnet.vercel.app',
     process.env.FRONTEND_URL
 ].filter(Boolean);
 
