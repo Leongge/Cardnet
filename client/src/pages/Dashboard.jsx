@@ -51,11 +51,12 @@ const Dashboard = () => {
 
                     <button
                         onClick={() => navigate('/app/clients')}
-                        className="flex flex-col items-center justify-center w-48 h-48 bg-purple-50 border-2 border-dashed border-purple-500 rounded-xl hover:bg-purple-100 transition cursor-pointer"
+                        disabled
+                        className="flex flex-col items-center justify-center w-48 h-48 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl cursor-not-allowed opacity-60"
                     >
-                        <Mail size={48} className="text-purple-500 mb-2" />
-                        <span className="font-semibold text-purple-600">Email Campaign</span>
-                        <span className="text-xs text-gray-500 mt-1">Bulk Send</span>
+                        <Mail size={48} className="text-gray-400 mb-2" />
+                        <span className="font-semibold text-gray-500">Email Campaign</span>
+                        <span className="text-xs text-gray-400 mt-1">Not Available</span>
                     </button>
                 </div>
             </div>
