@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Upload, Check, Save, Camera, X, RotateCcw } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import API_URL from '../config';
 
 const ScanReview = () => {
     const [file, setFile] = useState(null);
@@ -87,7 +88,7 @@ const ScanReview = () => {
             // Direct axios call or use thunk. Direct is fine for this specific mock action.
             // Note: We need token middleware on server? server/routes/scan.js didn't use 'auth' middleware so it's public for now (or I should add it).
             // Let's assume it's public for simplicity of mock.
-            const res = await axios.post('/api/scan/upload', formData, {
+            const res = await axios.post(`${API_URL}/api/scan/upload`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             setResults(res.data);
