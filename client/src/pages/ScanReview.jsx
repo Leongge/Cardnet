@@ -38,25 +38,33 @@ const ScanReview = () => {
             console.log('Camera stream obtained');
             streamRef.current = stream;
 
-            if (videoRef.current) {
-                console.log('Setting video srcObject...');
-                videoRef.current.srcObject = stream;
+            // Set camera active FIRST to render the video element
+            setCameraActive(true);
 
-                // Wait for metadata to load before playing
-                videoRef.current.onloadedmetadata = () => {
-                    console.log('Video metadata loaded, dimensions:',
-                        videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
-                    videoRef.current.play()
-                        .then(() => {
-                            console.log('Video playing');
-                            setCameraActive(true);
-                        })
-                        .catch(err => {
-                            console.error('Play error:', err);
-                            alert('Failed to play video: ' + err.message);
-                        });
-                };
-            }
+            // Wait for React to render the video element
+            setTimeout(() => {
+                console.log('Checking videoRef:', videoRef.current);
+                if (videoRef.current) {
+                    console.log('Setting video srcObject...');
+                    videoRef.current.srcObject = stream;
+
+                    // Wait for metadata to load before playing
+                    videoRef.current.onloadedmetadata = () => {
+                        console.log('Video metadata loaded, dimensions:',
+                            videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
+                        videoRef.current.play()
+                            .then(() => {
+                                console.log('Video playing');
+                            })
+                            .catch(err => {
+                                console.error('Play error:', err);
+                                alert('Failed to play video: ' + err.message);
+                            });
+                    };
+                } else {
+                    console.error('videoRef is still null!');
+                }
+            }, 100);
         } catch (err) {
             console.error('Camera error:', err);
             alert('Camera access failed: ' + err.message);
