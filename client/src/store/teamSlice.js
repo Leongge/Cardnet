@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import API_URL from '../config';
 
-export const fetchTeam = createAsyncThunk('team/fetch', async (_, { rejectWithValue }) => {
+export const fetchTeamMembers = createAsyncThunk('team/fetchMembers', async (_, { rejectWithValue }) => {
     try {
         const token = localStorage.getItem('token');
         const res = await axios.get(`${API_URL}/api/team`, {
@@ -14,7 +14,7 @@ export const fetchTeam = createAsyncThunk('team/fetch', async (_, { rejectWithVa
     }
 });
 
-export const addTeamMember = createAsyncThunk('team/add', async (userData, { rejectWithValue }) => {
+export const addTeamMember = createAsyncThunk('team/addMember', async (userData, { rejectWithValue }) => {
     try {
         const token = localStorage.getItem('token');
         const res = await axios.post(`${API_URL}/api/team/register`, userData, {
