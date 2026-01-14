@@ -63,8 +63,23 @@ const PublicVCard = () => {
 
     const {
         name, position, company_name, company_address, company_website,
-        email, phone, bio, profile_picture, background_picture, social_links
+        email, phone, bio, profile_picture, background_picture, social_links,
+        design_config
     } = user;
+
+    const design = design_config || {
+        primary_color: '#1e293b',
+        secondary_color: '#f59e0b',
+        accent_color: '#3b82f6',
+        text_color: '#0f172a',
+        background_color: '#ffffff',
+        layout_style: 'centered',
+        font_family: 'modern',
+        heading_size: 'medium',
+        spacing: 'normal',
+        show_decorations: true,
+        card_shape: 'rounded'
+    };
 
     const handleDownloadVCard = () => {
         const vcardData = `BEGIN:VCARD
@@ -130,10 +145,15 @@ END:VCARD`;
                 <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-amber-100/40 blur-[120px] rounded-full"></div>
             </div>
 
-            <div className="w-full max-w-[400px] bg-white md:rounded-[2.5rem] shadow-2xl shadow-slate-200/50 overflow-hidden relative z-10 min-h-screen md:min-h-[800px] flex flex-col">
+            <div className="w-full max-w-[400px] md:rounded-[2.5rem] shadow-2xl shadow-slate-200/50 overflow-hidden relative z-10 min-h-screen md:min-h-[800px] flex flex-col" style={{
+                backgroundColor: design.background_color,
+                fontFamily: design.font_family === 'classic' ? 'Georgia, serif' : design.font_family === 'playful' ? '"Comic Sans MS", cursive' : 'Inter, sans-serif'
+            }}>
 
                 {/* Header / Cover */}
-                <div className="h-44 relative bg-slate-900 overflow-hidden">
+                <div className="h-44 relative overflow-hidden" style={{
+                    backgroundColor: design.primary_color
+                }}>
                     {background_picture ? (
                         <img
                             src={background_picture.startsWith('http') ? background_picture : `${API_URL}${background_picture}`}
@@ -146,6 +166,12 @@ END:VCARD`;
                             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
                             <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
                         </>
+                    )}
+                    {design.show_decorations && (
+                        <div className="absolute bottom-0 left-0 w-32 h-32 rounded-full blur-2xl transform -translate-x-1/2 translate-y-1/2" style={{
+                            backgroundColor: design.secondary_color,
+                            opacity: 0.2
+                        }}></div>
                     )}
                 </div>
 
@@ -167,17 +193,20 @@ END:VCARD`;
                     </div>
 
                     {/* Intro */}
-                    <div className="text-center mb-10">
-                        <h1 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight">{name}</h1>
-                        <p className="text-amber-600 text-xs font-bold uppercase tracking-widest mb-2">{position}</p>
-                        <p className="text-slate-500 text-sm font-medium">{company_name}</p>
+                    <div className={design.spacing === 'compact' ? 'text-center mb-4' : design.spacing === 'spacious' ? 'text-center mb-12' : 'text-center mb-10'}>
+                        <h1 className="font-bold mb-2 tracking-tight" style={{
+                            color: design.text_color,
+                            fontSize: design.heading_size === 'small' ? '1.25rem' : design.heading_size === 'large' ? '1.875rem' : '1.5rem'
+                        }}>{name}</h1>
+                        <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: design.secondary_color }}>{position}</p>
+                        <p className="text-sm font-medium" style={{ color: design.text_color, opacity: 0.7 }}>{company_name}</p>
                     </div>
 
                     {/* Connect Message */}
                     {connectMessage && (
                         <div className={`mb-6 p-3 rounded-lg text-sm text-center ${connectMessage.type === 'success'
-                                ? 'bg-green-50 text-green-700 border border-green-200'
-                                : 'bg-red-50 text-red-700 border border-red-200'
+                            ? 'bg-green-50 text-green-700 border border-green-200'
+                            : 'bg-red-50 text-red-700 border border-red-200'
                             }`}>
                             {connectMessage.text}
                         </div>
@@ -187,7 +216,11 @@ END:VCARD`;
                     <div className="grid grid-cols-2 gap-4 mb-10">
                         <button
                             onClick={handleDownloadVCard}
-                            className="flex items-center justify-center gap-2 bg-slate-900 text-white py-3.5 rounded-xl font-semibold text-sm hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20"
+                            className="flex items-center justify-center gap-2 text-white py-3.5 font-semibold text-sm hover:opacity-90 transition-opacity shadow-lg"
+                            style={{
+                                backgroundColor: design.primary_color,
+                                borderRadius: design.card_shape === 'sharp' ? '0.25rem' : design.card_shape === 'pill' ? '2rem' : '0.75rem'
+                            }}
                         >
                             <Download size={18} />
                             Save
@@ -195,10 +228,15 @@ END:VCARD`;
                         <button
                             onClick={handleConnect}
                             disabled={isOwnVCard || connectLoading}
-                            className={`flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm transition-colors shadow-sm ${isOwnVCard
-                                    ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
-                                    : 'bg-white text-slate-900 border border-slate-200 hover:bg-slate-50'
+                            className={`flex items-center justify-center gap-2 py-3.5 font-semibold text-sm transition-colors shadow-sm ${isOwnVCard
+                                ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                                : 'bg-white hover:bg-slate-50 border'
                                 }`}
+                            style={{
+                                borderColor: isOwnVCard ? undefined : design.accent_color,
+                                color: isOwnVCard ? undefined : design.accent_color,
+                                borderRadius: design.card_shape === 'sharp' ? '0.25rem' : design.card_shape === 'pill' ? '2rem' : '0.75rem'
+                            }}
                         >
                             {connectLoading ? (
                                 <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
@@ -308,7 +346,7 @@ END:VCARD`;
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 
