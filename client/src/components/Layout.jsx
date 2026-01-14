@@ -43,7 +43,7 @@ const Layout = () => {
             `}>
                 {/* Mobile Close Button */}
                 <div className="flex items-center justify-between p-4">
-                    <img src="/logo.png" alt="Cardnet" className="h-20 w-auto" />
+                    <img src="/logo.png" alt="Cardnet" className="h-28 w-auto" />
                     <button
                         onClick={closeSidebar}
                         className="lg:hidden text-white hover:text-gray-300 p-2"
