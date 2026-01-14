@@ -14,6 +14,13 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
+// Debug: Check if Cloudinary config is loaded (don't log the secret)
+console.log('Cloudinary Config Check:', {
+    hasCloudName: !!process.env.CLOUDINARY_CLOUD_NAME,
+    hasApiKey: !!process.env.CLOUDINARY_API_KEY,
+    hasApiSecret: !!process.env.CLOUDINARY_API_SECRET
+});
+
 // Configure Cloudinary Storage
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
@@ -82,8 +89,8 @@ router.post('/upload', (req, res) => {
             console.error('Multer error:', err);
             return res.status(400).json({ message: `Upload error: ${err.message}` });
         } else if (err) {
-            console.error('Upload error:', err);
-            return res.status(400).json({ message: err.message });
+            console.error('Cloudinary/Multer upload error full details:', err);
+            return res.status(400).json({ message: err.message || 'Upload failed' });
         }
 
         try {
