@@ -20,6 +20,7 @@ const UserSchema = new mongoose.Schema({
     company_website: { type: String },
     bio: { type: String },
     profile_picture: { type: String }, // URL to S3 or similar
+    background_picture: { type: String }, // URL to background/cover photo
     social_links: {
         linkedin: String,
         twitter: String,
