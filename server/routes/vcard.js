@@ -50,19 +50,37 @@ router.get('/profile', async (req, res) => {
     }
 });
 
+// Ensure uploads directory exists
+const fs = require('fs');
+const uploadsDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
 // POST /upload - Upload profile picture
-router.post('/upload', upload.single('image'), (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({ message: 'No file uploaded' });
+router.post('/upload', (req, res) => {
+    upload.single('image')(req, res, function (err) {
+        if (err instanceof multer.MulterError) {
+            console.error('Multer error:', err);
+            return res.status(400).json({ message: `Upload error: ${err.message}` });
+        } else if (err) {
+            console.error('Upload error:', err);
+            return res.status(400).json({ message: err.message });
         }
-        // Return the URL to access the file
-        const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
-        res.json({ url: fileUrl });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server Error during upload' });
-    }
+
+        try {
+            if (!req.file) {
+                return res.status(400).json({ message: 'No file uploaded' });
+            }
+            // Return the URL to access the file
+            const fileUrl = `/uploads/${req.file.filename}`;
+            console.log('File uploaded successfully:', fileUrl);
+            res.json({ url: fileUrl });
+        } catch (err) {
+            console.error('Server error during upload:', err);
+            res.status(500).json({ message: 'Server Error during upload' });
+        }
+    });
 });
 
 // GET /:slug - Get public VCard
