@@ -166,7 +166,7 @@ const VCardEditor = () => {
                                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Profile Link / Username</label>
                                         <div className="flex rounded-lg border border-slate-200 bg-slate-50 overflow-hidden focus-within:ring-2 focus-within:ring-amber-500/20 focus-within:border-amber-500 transition-all">
                                             <div className="px-4 py-3 bg-slate-100 border-r border-slate-200 text-slate-500 text-sm font-medium">
-                                                cardnet.com/u/
+                                                cardnet.vercel.app/u/
                                             </div>
                                             <input
                                                 type="text"
