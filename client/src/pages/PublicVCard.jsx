@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Mail, Phone, MapPin, Globe, Linkedin, Twitter, Facebook, Instagram, Share2, UserPlus, Download, Briefcase, ChevronRight } from 'lucide-react';
+import API_URL from '../config';
 
 const PublicVCard = () => {
     const { slug } = useParams();
@@ -12,10 +13,11 @@ const PublicVCard = () => {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const res = await axios.get(`/api/vcard/${slug}`);
+                const res = await axios.get(`${API_URL}/api/vcard/${slug}`);
                 setUser(res.data);
                 setLoading(false);
             } catch (err) {
+                console.error('Error fetching vCard:', err);
                 setError('Profile not found');
                 setLoading(false);
             }
@@ -88,7 +90,7 @@ END:VCARD`;
                         <div className="absolute inset-0 rounded-full bg-white p-[4px] shadow-xl">
                             <div className="w-full h-full rounded-full bg-slate-100 overflow-hidden border border-slate-100">
                                 {profile_picture ? (
-                                    <img src={profile_picture} alt={name} className="w-full h-full object-cover" />
+                                    <img src={profile_picture.startsWith('http') ? profile_picture : `${API_URL}${profile_picture}`} alt={name} className="w-full h-full object-cover" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-4xl bg-slate-100 text-slate-400">
                                         {name?.charAt(0)}
