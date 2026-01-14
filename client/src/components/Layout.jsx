@@ -37,7 +37,7 @@ const Layout = () => {
             {/* Sidebar */}
             <div className={`
                 fixed lg:static inset-y-0 left-0 z-50
-                w-64 bg-gradient-to-br from-black via-black to-purple-950/30 text-white flex flex-col
+                w-64 bg-gradient-to-br from-black from-70% via-gray-950 to-purple-900/40 text-white flex flex-col
                 transform transition-transform duration-300 ease-in-out
                 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
             `}>
