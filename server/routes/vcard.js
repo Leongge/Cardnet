@@ -297,24 +297,34 @@ router.post('/design/generate', async (req, res) => {
             apiKey: process.env.OPENAI_API_KEY
         });
 
-        const systemPrompt = `You are a professional UI/UX designer specializing in business card designs. Generate a VCard design configuration based on the user's description.
+        const systemPrompt = `You are a professional UI/UX designer specializing in digital business cards. Generate a complete VCard design configuration based on the user's description.
 
 Return ONLY a valid JSON object with this exact structure (no markdown, no explanation):
 {
   "primary_color": "#hexcode",
   "secondary_color": "#hexcode",
   "accent_color": "#hexcode",
-  "background_style": "gradient|solid|pattern",
-  "font_style": "modern|classic|playful",
-  "border_radius": "sharp|rounded|pill"
+  "text_color": "#hexcode",
+  "layout_style": "centered|left-aligned|split|minimal",
+  "font_family": "modern|classic|playful",
+  "heading_size": "small|medium|large",
+  "spacing": "compact|normal|spacious",
+  "show_decorations": true|false,
+  "card_shape": "rounded|sharp|pill"
 }
 
 Guidelines:
-- Choose harmonious, accessible colors
+- Choose harmonious, accessible colors with good contrast
 - primary_color: main background/header color
-- secondary_color: complementary accent color
-- accent_color: call-to-action color
-- Ensure good contrast for readability`;
+- secondary_color: complementary accent color (for subtitles, labels)
+- accent_color: call-to-action color (buttons, links)
+- text_color: main text color
+- layout_style: overall card layout structure
+- font_family: typography style matching the theme
+- heading_size: size of name/title elements
+- spacing: overall spacing between elements
+- show_decorations: whether to show decorative elements
+- card_shape: border radius style`;
 
         const completion = await openai.chat.completions.create({
             model: "gpt-4o-mini",
@@ -323,7 +333,7 @@ Guidelines:
                 { role: "user", content: `Design style: ${prompt}` }
             ],
             temperature: 0.7,
-            max_tokens: 200
+            max_tokens: 300
         });
 
         const responseText = completion.choices[0].message.content.trim();
@@ -338,9 +348,9 @@ Guidelines:
         }
 
         // Validate required fields
-        const requiredFields = ['primary_color', 'secondary_color', 'accent_color', 'background_style', 'font_style', 'border_radius'];
+        const requiredFields = ['primary_color', 'secondary_color', 'accent_color', 'text_color', 'layout_style', 'font_family', 'heading_size', 'spacing', 'show_decorations', 'card_shape'];
         for (const field of requiredFields) {
-            if (!designConfig[field]) {
+            if (designConfig[field] === undefined) {
                 return res.status(500).json({ message: `AI response missing field: ${field}` });
             }
         }
@@ -404,9 +414,13 @@ router.post('/design/reset', async (req, res) => {
             primary_color: '#1e293b',
             secondary_color: '#f59e0b',
             accent_color: '#3b82f6',
-            background_style: 'gradient',
-            font_style: 'modern',
-            border_radius: 'rounded'
+            text_color: '#0f172a',
+            layout_style: 'centered',
+            font_family: 'modern',
+            heading_size: 'medium',
+            spacing: 'normal',
+            show_decorations: true,
+            card_shape: 'rounded'
         };
 
         const updatedUser = await User.findByIdAndUpdate(

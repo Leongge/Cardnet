@@ -28,12 +28,25 @@ const UserSchema = new mongoose.Schema({
         instagram: String
     },
     design_config: {
+        // Colors
         primary_color: { type: String, default: '#1e293b' },      // slate-900
         secondary_color: { type: String, default: '#f59e0b' },    // amber-500
         accent_color: { type: String, default: '#3b82f6' },       // blue-500
-        background_style: { type: String, default: 'gradient' },  // gradient, solid, pattern
-        font_style: { type: String, default: 'modern' },          // modern, classic, playful
-        border_radius: { type: String, default: 'rounded' }       // sharp, rounded, pill
+        text_color: { type: String, default: '#0f172a' },         // slate-950
+
+        // Layout
+        layout_style: { type: String, default: 'centered' },      // centered, left-aligned, split, minimal
+
+        // Typography
+        font_family: { type: String, default: 'modern' },         // modern, classic, playful
+        heading_size: { type: String, default: 'medium' },        // small, medium, large
+
+        // Spacing
+        spacing: { type: String, default: 'normal' },             // compact, normal, spacious
+
+        // Visual Elements
+        show_decorations: { type: Boolean, default: true },
+        card_shape: { type: String, default: 'rounded' }          // rounded, sharp, pill
     },
     theme_color: { type: String, default: '#3b82f6' } // Default to blue-500
 }, { timestamps: true });
