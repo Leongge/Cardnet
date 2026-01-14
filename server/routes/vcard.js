@@ -176,10 +176,13 @@ router.put('/profile', async (req, res) => {
 
         log(`Updates: ${JSON.stringify(actualUpdates)}`);
 
-        // Check if slug is taken
-        if (actualUpdates.vcard_slug) {
+        // Get current user to check if slug is changing
+        const currentUser = await User.findById(userId);
+
+        // Check if slug is taken (only if it's different from current slug)
+        if (actualUpdates.vcard_slug && actualUpdates.vcard_slug !== currentUser.vcard_slug) {
             const existing = await User.findOne({ vcard_slug: actualUpdates.vcard_slug });
-            if (existing && existing._id.toString() !== userId) {
+            if (existing) {
                 log(`Slug ${actualUpdates.vcard_slug} taken by another user`);
                 return res.status(400).json({ message: 'Slug already taken' });
             }
