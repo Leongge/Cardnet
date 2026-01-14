@@ -158,10 +158,10 @@ const VCardEditor = () => {
                 { design_config: previewDesign },
                 { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
             );
+            // Update formData to apply design immediately without refresh
+            setFormData(prev => ({ ...prev, design_config: previewDesign }));
             setDesignMessage({ type: 'success', text: 'Design saved successfully!' });
             setTimeout(() => setDesignMessage(null), 3000);
-            // Reload to apply design
-            setTimeout(() => window.location.reload(), 1000);
         } catch (err) {
             console.error(err);
             setDesignMessage({ type: 'error', text: 'Failed to save design' });
@@ -174,12 +174,25 @@ const VCardEditor = () => {
             await axios.post(`${API_URL}/api/vcard/design/reset`, {},
                 { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
             );
+            // Reset to default design config
+            const defaultDesign = {
+                primary_color: '#1e293b',
+                secondary_color: '#f59e0b',
+                accent_color: '#3b82f6',
+                text_color: '#0f172a',
+                background_color: '#ffffff',
+                layout_style: 'centered',
+                font_family: 'modern',
+                heading_size: 'medium',
+                spacing: 'normal',
+                show_decorations: true,
+                card_shape: 'rounded'
+            };
+            setFormData(prev => ({ ...prev, design_config: defaultDesign }));
             setPreviewDesign(null);
             setDesignPrompt('');
             setDesignMessage({ type: 'success', text: 'Design reset to default!' });
             setTimeout(() => setDesignMessage(null), 3000);
-            // Reload to apply design
-            setTimeout(() => window.location.reload(), 1000);
         } catch (err) {
             console.error(err);
             setDesignMessage({ type: 'error', text: 'Failed to reset design' });
