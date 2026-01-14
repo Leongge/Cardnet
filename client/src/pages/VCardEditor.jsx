@@ -78,7 +78,8 @@ const VCardEditor = () => {
             setMessage({ type: 'success', text: 'Image uploaded successfully' });
         } catch (err) {
             console.error(err);
-            setMessage({ type: 'error', text: 'Image upload failed' });
+            const errorMsg = err.response?.data?.message || 'Image upload failed';
+            setMessage({ type: 'error', text: errorMsg });
         } finally {
             setUploading(false);
             setTimeout(() => setMessage(null), 3000);
@@ -512,13 +513,30 @@ const VCardEditor = () => {
                                     )}
                                 </div>
 
-                                {/* Socials Placeholder for preview */}
-                                <div className="flex justify-center gap-4 pt-6 border-t border-slate-100 mb-6">
-                                    <Linkedin size={18} className="text-slate-300" />
-                                    <Twitter size={18} className="text-slate-300" />
-                                    <Facebook size={18} className="text-slate-300" />
-                                    <Instagram size={18} className="text-slate-300" />
-                                </div>
+                                {formData.social_links && (
+                                    <div className="flex justify-center gap-4 pt-6 border-t border-slate-100 mb-6">
+                                        {formData.social_links.linkedin && (
+                                            <a href={formData.social_links.linkedin} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-slate-900 transition-colors">
+                                                <Linkedin size={18} />
+                                            </a>
+                                        )}
+                                        {formData.social_links.twitter && (
+                                            <a href={formData.social_links.twitter} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-slate-900 transition-colors">
+                                                <Twitter size={18} />
+                                            </a>
+                                        )}
+                                        {formData.social_links.facebook && (
+                                            <a href={formData.social_links.facebook} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-slate-900 transition-colors">
+                                                <Facebook size={18} />
+                                            </a>
+                                        )}
+                                        {formData.social_links.instagram && (
+                                            <a href={formData.social_links.instagram} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-slate-900 transition-colors">
+                                                <Instagram size={18} />
+                                            </a>
+                                        )}
+                                    </div>
+                                )}
 
                                 <div className="text-center pb-6">
                                     <div className="inline-flex items-center justify-center gap-2 px-3 py-1 bg-slate-50 rounded-full border border-slate-100">
