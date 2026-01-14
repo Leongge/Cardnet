@@ -405,6 +405,17 @@ CRITICAL Guidelines:
             console.log(`Auto-corrected secondary_color for contrast. Original contrast: ${secondaryBgContrast.toFixed(2)}`);
         }
 
+        // Check and fix primary_color vs background_color contrast (for Save button visibility)
+        const primaryBgContrast = getContrastRatio(designConfig.primary_color, designConfig.background_color);
+        if (primaryBgContrast < 3.0) {
+            // Auto-fix: Make primary color contrast with background
+            const bgLuminance = parseInt(designConfig.background_color.slice(1), 16);
+            const isDarkBg = bgLuminance < 0x888888;
+            // If background is light, make primary dark; if dark, keep it dark or use accent
+            designConfig.primary_color = isDarkBg ? designConfig.accent_color : '#1e293b';
+            console.log(`Auto-corrected primary_color for contrast. Original contrast: ${primaryBgContrast.toFixed(2)}`);
+        }
+
         res.json({ design_config: designConfig });
 
     } catch (err) {
