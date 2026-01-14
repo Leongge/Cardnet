@@ -43,7 +43,13 @@ router.get('/profile', async (req, res) => {
         const user = await User.findById(decoded.user.id).select('-password_hash -biometric_key');
         if (!user) return res.status(404).json({ message: 'User not found' });
 
-        res.json(user);
+        // Normalize profile picture URL
+        const userData = user.toObject();
+        if (userData.profile_picture) {
+            userData.profile_picture = normalizeImageUrl(userData.profile_picture);
+        }
+
+        res.json(userData);
     } catch (err) {
         console.error(err);
         res.status(401).json({ message: 'Token is not valid' });
@@ -56,6 +62,17 @@ const uploadsDir = path.join(__dirname, '../uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
+
+// Helper function to normalize image URLs
+const normalizeImageUrl = (url) => {
+    if (!url) return url;
+    // If URL contains localhost or full domain, extract just the /uploads/... part
+    if (url.includes('localhost') || url.includes('http://') || url.includes('https://')) {
+        const match = url.match(/\/uploads\/[^?]+/);
+        return match ? match[0] : url;
+    }
+    return url;
+};
 
 // POST /upload - Upload profile picture
 router.post('/upload', (req, res) => {
@@ -93,7 +110,13 @@ router.get('/:slug', async (req, res) => {
             return res.status(404).json({ message: 'VCard not found' });
         }
 
-        res.json(user);
+        // Normalize profile picture URL
+        const userData = user.toObject();
+        if (userData.profile_picture) {
+            userData.profile_picture = normalizeImageUrl(userData.profile_picture);
+        }
+
+        res.json(userData);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server Error' });
