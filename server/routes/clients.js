@@ -132,4 +132,58 @@ router.put('/share', auth, async (req, res) => {
     }
 });
 
+// Connect via vCard Slug
+router.post('/connect/:slug', auth, async (req, res) => {
+    try {
+        const { slug } = req.params;
+        const User = require('../models/User');
+
+        // 1. Find the vCard owner
+        const targetUser = await User.findOne({ vcard_slug: slug });
+        if (!targetUser) {
+            return res.status(404).json({ msg: 'vCard not found' });
+        }
+
+        // 2. Check if connecting to self
+        if (targetUser._id.toString() === req.user.id) {
+            return res.status(400).json({ msg: 'You cannot connect to your own vCard' });
+        }
+
+        // 3. Check if already connected
+        const existingConnection = await Client.findOne({
+            owner_id: req.user.id,
+            'data.email': targetUser.email
+        });
+
+        if (existingConnection) {
+            return res.status(400).json({ msg: 'You are already connected to this person' });
+        }
+
+        // 4. Create new Client entry for the current user
+        const currentUser = await User.findById(req.user.id);
+
+        const newClient = new Client({
+            owner_id: req.user.id,
+            corporate_id: currentUser.corporate_id,
+            visibility: 'Private',
+            data: {
+                name: targetUser.name,
+                position: targetUser.position,
+                email: targetUser.email,
+                phone: targetUser.phone,
+                company_name: targetUser.company_name,
+                company_address: targetUser.company_address,
+                category: 'vCard Connection'
+            },
+            source: 'vCard'
+        });
+
+        await newClient.save();
+        res.json({ msg: `Successfully connected to ${targetUser.name}`, client: newClient });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
 module.exports = router;
