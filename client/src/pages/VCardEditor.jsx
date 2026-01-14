@@ -540,6 +540,15 @@ const VCardEditor = () => {
                                                     <p className="text-xs text-slate-500 text-center">Accent</p>
                                                 </div>
                                             </div>
+                                            <div className="mb-4 p-3 bg-slate-50 rounded-lg">
+                                                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Design Settings</p>
+                                                <div className="grid grid-cols-2 gap-2 text-xs">
+                                                    <div><span className="text-slate-400">Layout:</span> <span className="font-medium">{previewDesign.layout_style}</span></div>
+                                                    <div><span className="text-slate-400">Font:</span> <span className="font-medium">{previewDesign.font_family}</span></div>
+                                                    <div><span className="text-slate-400">Spacing:</span> <span className="font-medium">{previewDesign.spacing}</span></div>
+                                                    <div><span className="text-slate-400">Shape:</span> <span className="font-medium">{previewDesign.card_shape}</span></div>
+                                                </div>
+                                            </div>
                                             <div className="flex gap-2">
                                                 <button
                                                     type="button"
@@ -615,7 +624,8 @@ const VCardEditor = () => {
 
                             {/* Header / Cover */}
                             <div className="h-44 relative overflow-hidden" style={{
-                                backgroundColor: previewDesign?.primary_color || '#1e293b'
+                                backgroundColor: previewDesign?.primary_color || '#1e293b',
+                                borderRadius: previewDesign?.card_shape === 'sharp' ? '0' : previewDesign?.card_shape === 'pill' ? '2rem 2rem 0 0' : '0'
                             }}>
                                 {formData.background_picture ? (
                                     <img
@@ -629,6 +639,12 @@ const VCardEditor = () => {
                                         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
                                         <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
                                     </>
+                                )}
+                                {previewDesign?.show_decorations && previewDesign && (
+                                    <div className="absolute bottom-0 left-0 w-32 h-32 rounded-full blur-2xl transform -translate-x-1/2 translate-y-1/2" style={{
+                                        backgroundColor: previewDesign.secondary_color,
+                                        opacity: 0.2
+                                    }}></div>
                                 )}
                             </div>
 
@@ -650,8 +666,13 @@ const VCardEditor = () => {
                                 </div>
 
                                 {/* Intro */}
-                                <div className="text-center mb-8">
-                                    <h1 className="text-xl font-bold text-slate-900 mb-1 tracking-tight">{formData.name || 'Your Name'}</h1>
+                                <div className={previewDesign?.spacing === 'compact' ? 'text-center mb-4' : previewDesign?.spacing === 'spacious' ? 'text-center mb-12' : 'text-center mb-8'} style={{
+                                    fontFamily: previewDesign?.font_family === 'classic' ? 'Georgia, serif' : previewDesign?.font_family === 'playful' ? '"Comic Sans MS", cursive' : 'Inter, sans-serif'
+                                }}>
+                                    <h1 className="font-bold text-slate-900 mb-1 tracking-tight" style={{
+                                        fontSize: previewDesign?.heading_size === 'small' ? '1.125rem' : previewDesign?.heading_size === 'large' ? '1.5rem' : '1.25rem',
+                                        color: previewDesign?.text_color || '#0f172a'
+                                    }}>{formData.name || 'Your Name'}</h1>
                                     <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{
                                         color: previewDesign?.secondary_color || '#f59e0b'
                                     }}>{formData.position || 'Your Position'}</p>
@@ -659,16 +680,18 @@ const VCardEditor = () => {
                                 </div>
 
                                 {/* Action Buttons */}
-                                <div className="grid grid-cols-2 gap-3 mb-8">
-                                    <button className="flex items-center justify-center gap-2 text-white py-3 rounded-xl font-semibold text-xs shadow-lg" style={{
-                                        backgroundColor: previewDesign?.primary_color || '#1e293b'
+                                <div className={`grid grid-cols-2 gap-3 ${previewDesign?.spacing === 'compact' ? 'mb-4' : previewDesign?.spacing === 'spacious' ? 'mb-12' : 'mb-8'}`}>
+                                    <button className="flex items-center justify-center gap-2 text-white py-3 font-semibold text-xs shadow-lg" style={{
+                                        backgroundColor: previewDesign?.primary_color || '#1e293b',
+                                        borderRadius: previewDesign?.card_shape === 'sharp' ? '0.25rem' : previewDesign?.card_shape === 'pill' ? '2rem' : '0.75rem'
                                     }}>
                                         <Download size={14} />
                                         Save
                                     </button>
-                                    <button className="flex items-center justify-center gap-2 bg-white border py-3 rounded-xl font-semibold text-xs shadow-sm" style={{
+                                    <button className="flex items-center justify-center gap-2 bg-white border py-3 font-semibold text-xs shadow-sm" style={{
                                         borderColor: previewDesign?.accent_color || '#3b82f6',
-                                        color: previewDesign?.accent_color || '#3b82f6'
+                                        color: previewDesign?.accent_color || '#3b82f6',
+                                        borderRadius: previewDesign?.card_shape === 'sharp' ? '0.25rem' : previewDesign?.card_shape === 'pill' ? '2rem' : '0.75rem'
                                     }}>
                                         <UserPlus size={14} />
                                         Connect
