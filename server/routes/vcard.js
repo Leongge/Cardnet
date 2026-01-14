@@ -283,4 +283,147 @@ router.post('/connect/:slug', async (req, res) => {
     }
 });
 
+// POST /design/generate - Generate AI design based on user prompt
+router.post('/design/generate', async (req, res) => {
+    try {
+        const { prompt } = req.body;
+
+        if (!prompt || prompt.trim().length === 0) {
+            return res.status(400).json({ message: 'Design prompt is required' });
+        }
+
+        const OpenAI = require('openai');
+        const openai = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY
+        });
+
+        const systemPrompt = `You are a professional UI/UX designer specializing in business card designs. Generate a VCard design configuration based on the user's description.
+
+Return ONLY a valid JSON object with this exact structure (no markdown, no explanation):
+{
+  "primary_color": "#hexcode",
+  "secondary_color": "#hexcode",
+  "accent_color": "#hexcode",
+  "background_style": "gradient|solid|pattern",
+  "font_style": "modern|classic|playful",
+  "border_radius": "sharp|rounded|pill"
+}
+
+Guidelines:
+- Choose harmonious, accessible colors
+- primary_color: main background/header color
+- secondary_color: complementary accent color
+- accent_color: call-to-action color
+- Ensure good contrast for readability`;
+
+        const completion = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: `Design style: ${prompt}` }
+            ],
+            temperature: 0.7,
+            max_tokens: 200
+        });
+
+        const responseText = completion.choices[0].message.content.trim();
+
+        // Parse JSON response
+        let designConfig;
+        try {
+            designConfig = JSON.parse(responseText);
+        } catch (parseErr) {
+            console.error('Failed to parse AI response:', responseText);
+            return res.status(500).json({ message: 'Failed to parse AI response' });
+        }
+
+        // Validate required fields
+        const requiredFields = ['primary_color', 'secondary_color', 'accent_color', 'background_style', 'font_style', 'border_radius'];
+        for (const field of requiredFields) {
+            if (!designConfig[field]) {
+                return res.status(500).json({ message: `AI response missing field: ${field}` });
+            }
+        }
+
+        res.json({ design_config: designConfig });
+
+    } catch (err) {
+        console.error('POST /design/generate - Error:', err);
+        res.status(500).json({ message: 'Failed to generate design', error: err.message });
+    }
+});
+
+// POST /design/save - Save AI-generated design to user profile
+router.post('/design/save', async (req, res) => {
+    try {
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        if (!token) {
+            return res.status(401).json({ message: 'Authentication required' });
+        }
+
+        const jwt = require('jsonwebtoken');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.user.id;
+
+        const { design_config } = req.body;
+
+        if (!design_config) {
+            return res.status(400).json({ message: 'design_config is required' });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { design_config },
+            { new: true }
+        ).select('-password_hash -biometric_key');
+
+        res.json({
+            message: 'Design saved successfully',
+            design_config: updatedUser.design_config
+        });
+
+    } catch (err) {
+        console.error('POST /design/save - Error:', err);
+        res.status(500).json({ message: 'Failed to save design' });
+    }
+});
+
+// POST /design/reset - Reset design to default
+router.post('/design/reset', async (req, res) => {
+    try {
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        if (!token) {
+            return res.status(401).json({ message: 'Authentication required' });
+        }
+
+        const jwt = require('jsonwebtoken');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.user.id;
+
+        const defaultDesign = {
+            primary_color: '#1e293b',
+            secondary_color: '#f59e0b',
+            accent_color: '#3b82f6',
+            background_style: 'gradient',
+            font_style: 'modern',
+            border_radius: 'rounded'
+        };
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { design_config: defaultDesign },
+            { new: true }
+        ).select('-password_hash -biometric_key');
+
+        res.json({
+            message: 'Design reset to default',
+            design_config: updatedUser.design_config
+        });
+
+    } catch (err) {
+        console.error('POST /design/reset - Error:', err);
+        res.status(500).json({ message: 'Failed to reset design' });
+    }
+});
+
 module.exports = router;

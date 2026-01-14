@@ -27,6 +27,14 @@ const UserSchema = new mongoose.Schema({
         facebook: String,
         instagram: String
     },
+    design_config: {
+        primary_color: { type: String, default: '#1e293b' },      // slate-900
+        secondary_color: { type: String, default: '#f59e0b' },    // amber-500
+        accent_color: { type: String, default: '#3b82f6' },       // blue-500
+        background_style: { type: String, default: 'gradient' },  // gradient, solid, pattern
+        font_style: { type: String, default: 'modern' },          // modern, classic, playful
+        border_radius: { type: String, default: 'rounded' }       // sharp, rounded, pill
+    },
     theme_color: { type: String, default: '#3b82f6' } // Default to blue-500
 }, { timestamps: true });
 

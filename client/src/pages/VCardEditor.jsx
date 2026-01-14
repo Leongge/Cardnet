@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Mail, Phone, MapPin, Globe, Linkedin, Twitter, Facebook, Instagram, Share2, UserPlus, Download, Briefcase, ChevronRight, Smartphone, Save, Eye } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, Linkedin, Twitter, Facebook, Instagram, Share2, UserPlus, Download, Briefcase, ChevronRight, Smartphone, Save, Eye, Sparkles, RotateCcw } from 'lucide-react';
 import API_URL from '../config';
 
 const VCardEditor = () => {
@@ -15,6 +15,7 @@ const VCardEditor = () => {
         bio: '',
         vcard_slug: '',
         profile_picture: '',
+        background_picture: '',
         social_links: {
             linkedin: '',
             twitter: '',
@@ -26,6 +27,13 @@ const VCardEditor = () => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState(null);
+    const [uploading, setUploading] = useState(false);
+
+    // AI Design states
+    const [designPrompt, setDesignPrompt] = useState('');
+    const [generatingDesign, setGeneratingDesign] = useState(false);
+    const [previewDesign, setPreviewDesign] = useState(null);
+    const [designMessage, setDesignMessage] = useState(null);
 
     useEffect(() => {
         fetchProfile();
@@ -57,9 +65,7 @@ const VCardEditor = () => {
         }
     };
 
-    const [uploading, setUploading] = useState(false);
-
-    const handleImageUpload = async (e) => {
+    const handleImageUpload = async (e, field = 'profile_picture') => {
         const file = e.target.files[0];
         if (!file) return;
 
@@ -74,8 +80,8 @@ const VCardEditor = () => {
                     Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
             });
-            setFormData(prev => ({ ...prev, profile_picture: res.data.url }));
-            setMessage({ type: 'success', text: 'Image uploaded successfully' });
+            setFormData(prev => ({ ...prev, [field]: res.data.url }));
+            setMessage({ type: 'success', text: `${field === 'profile_picture' ? 'Profile' : 'Background'} image uploaded successfully` });
         } catch (err) {
             console.error(err);
             const errorMsg = err.response?.data?.message || 'Image upload failed';
@@ -118,6 +124,69 @@ const VCardEditor = () => {
             setTimeout(() => setMessage(null), 3000);
         }
     };
+
+    const handleGenerateDesign = async () => {
+        if (!designPrompt.trim()) {
+            setDesignMessage({ type: 'error', text: 'Please enter a design description' });
+            setTimeout(() => setDesignMessage(null), 3000);
+            return;
+        }
+
+        setGeneratingDesign(true);
+        try {
+            const res = await axios.post(`${API_URL}/api/vcard/design/generate`,
+                { prompt: designPrompt },
+                { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+            );
+            setPreviewDesign(res.data.design_config);
+            setDesignMessage({ type: 'success', text: 'Design generated! Preview below.' });
+            setTimeout(() => setDesignMessage(null), 3000);
+        } catch (err) {
+            console.error(err);
+            setDesignMessage({ type: 'error', text: 'Failed to generate design' });
+            setTimeout(() => setDesignMessage(null), 3000);
+        } finally {
+            setGeneratingDesign(false);
+        }
+    };
+
+    const handleSaveDesign = async () => {
+        if (!previewDesign) return;
+
+        try {
+            await axios.post(`${API_URL}/api/vcard/design/save`,
+                { design_config: previewDesign },
+                { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+            );
+            setDesignMessage({ type: 'success', text: 'Design saved successfully!' });
+            setTimeout(() => setDesignMessage(null), 3000);
+            // Reload to apply design
+            setTimeout(() => window.location.reload(), 1000);
+        } catch (err) {
+            console.error(err);
+            setDesignMessage({ type: 'error', text: 'Failed to save design' });
+            setTimeout(() => setDesignMessage(null), 3000);
+        }
+    };
+
+    const handleResetDesign = async () => {
+        try {
+            await axios.post(`${API_URL}/api/vcard/design/reset`, {},
+                { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+            );
+            setPreviewDesign(null);
+            setDesignPrompt('');
+            setDesignMessage({ type: 'success', text: 'Design reset to default!' });
+            setTimeout(() => setDesignMessage(null), 3000);
+            // Reload to apply design
+            setTimeout(() => window.location.reload(), 1000);
+        } catch (err) {
+            console.error(err);
+            setDesignMessage({ type: 'error', text: 'Failed to reset design' });
+            setTimeout(() => setDesignMessage(null), 3000);
+        }
+    };
+
 
     if (loading) return (
         <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -222,7 +291,7 @@ const VCardEditor = () => {
                                                 <input
                                                     type="file"
                                                     accept="image/*"
-                                                    onChange={handleImageUpload}
+                                                    onChange={(e) => handleImageUpload(e, 'profile_picture')}
                                                     id="profile-upload"
                                                     className="hidden"
                                                 />
@@ -230,10 +299,47 @@ const VCardEditor = () => {
                                                     htmlFor="profile-upload"
                                                     className={`inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
                                                 >
-                                                    <Download size={16} className="rotate-180" /> {/* Using Download icon rotated as Upload */}
+                                                    <Download size={16} className="rotate-180" />
                                                     Upload New Photo
                                                 </label>
                                                 <p className="text-[10px] text-slate-400 mt-1">Recommended: Square JPG/PNG, max 5MB.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="md:col-span-2 space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Cover Photo (Background)</label>
+                                        <div className="space-y-3">
+                                            <div className="relative w-full h-32 rounded-xl bg-slate-100 overflow-hidden border border-slate-200">
+                                                {formData.background_picture ? (
+                                                    <img src={formData.background_picture.startsWith('http') ? formData.background_picture : `${API_URL}${formData.background_picture}`} alt="Background" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-slate-400 bg-gradient-to-br from-slate-100 to-slate-200">
+                                                        <span className="text-xs">No cover photo uploaded</span>
+                                                    </div>
+                                                )}
+                                                {uploading && (
+                                                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                                        <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) => handleImageUpload(e, 'background_picture')}
+                                                    id="background-upload"
+                                                    className="hidden"
+                                                />
+                                                <label
+                                                    htmlFor="background-upload"
+                                                    className={`inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
+                                                >
+                                                    <Download size={16} className="rotate-180" />
+                                                    Upload Cover Photo
+                                                </label>
+                                                <p className="text-[10px] text-slate-400 mt-1">Recommended: 1200x400 JPG/PNG.</p>
                                             </div>
                                         </div>
                                     </div>
@@ -370,6 +476,93 @@ const VCardEditor = () => {
                                 </div>
                             </section>
 
+                            {/* AI Design Section */}
+                            <section className="bg-gradient-to-br from-purple-50 to-blue-50 p-6 rounded-2xl border border-purple-200 shadow-sm">
+                                <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-6 pb-4 border-b border-purple-100">
+                                    <Sparkles size={20} className="text-purple-500" />
+                                    AI Design Customization
+                                </h2>
+
+                                {designMessage && (
+                                    <div className={`mb-4 p-3 rounded-lg text-sm ${designMessage.type === 'success'
+                                            ? 'bg-green-50 text-green-700 border border-green-200'
+                                            : 'bg-red-50 text-red-700 border border-red-200'
+                                        }`}>
+                                        {designMessage.text}
+                                    </div>
+                                )}
+
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Describe Your Style</label>
+                                        <input
+                                            type="text"
+                                            value={designPrompt}
+                                            onChange={(e) => setDesignPrompt(e.target.value)}
+                                            className="w-full bg-white border border-purple-200 rounded-lg px-4 py-3 text-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all placeholder:text-slate-400"
+                                            placeholder="e.g., professional business, tech startup, creative agency..."
+                                        />
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={handleGenerateDesign}
+                                        disabled={generatingDesign}
+                                        className="w-full flex items-center justify-center gap-2 bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-colors shadow-lg shadow-purple-600/20 disabled:opacity-50"
+                                    >
+                                        {generatingDesign ? (
+                                            <>
+                                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                                Generating...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Sparkles size={18} />
+                                                Generate Design
+                                            </>
+                                        )}
+                                    </button>
+
+                                    {previewDesign && (
+                                        <div className="mt-4 p-4 bg-white rounded-lg border border-purple-200">
+                                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Preview Colors</p>
+                                            <div className="grid grid-cols-3 gap-3 mb-4">
+                                                <div className="space-y-1">
+                                                    <div className="h-12 rounded-lg border border-slate-200" style={{ backgroundColor: previewDesign.primary_color }}></div>
+                                                    <p className="text-xs text-slate-500 text-center">Primary</p>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <div className="h-12 rounded-lg border border-slate-200" style={{ backgroundColor: previewDesign.secondary_color }}></div>
+                                                    <p className="text-xs text-slate-500 text-center">Secondary</p>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <div className="h-12 rounded-lg border border-slate-200" style={{ backgroundColor: previewDesign.accent_color }}></div>
+                                                    <p className="text-xs text-slate-500 text-center">Accent</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={handleSaveDesign}
+                                                    className="flex-1 flex items-center justify-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-green-700 transition-colors"
+                                                >
+                                                    <Save size={16} />
+                                                    Save Design
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={handleResetDesign}
+                                                    className="flex items-center justify-center gap-2 bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-semibold text-sm hover:bg-slate-300 transition-colors"
+                                                >
+                                                    <RotateCcw size={16} />
+                                                    Reset
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </section>
+
                             <div className="pt-4 flex items-center justify-end gap-4">
                                 <a
                                     href={`/u/${formData.vcard_slug || formData.url_slug || 'preview'}`}
@@ -422,9 +615,19 @@ const VCardEditor = () => {
 
                             {/* Header / Cover */}
                             <div className="h-44 relative bg-slate-900 overflow-hidden">
-                                <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-950"></div>
-                                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+                                {formData.background_picture ? (
+                                    <img
+                                        src={formData.background_picture.startsWith('http') ? formData.background_picture : `${API_URL}${formData.background_picture}`}
+                                        alt="Cover"
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <>
+                                        <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-950"></div>
+                                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
+                                        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+                                    </>
+                                )}
                             </div>
 
                             <div className="px-6 pb-12 -mt-20 relative flex-1 flex flex-col">
