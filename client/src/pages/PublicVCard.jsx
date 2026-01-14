@@ -1,14 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Mail, Phone, MapPin, Globe, Linkedin, Twitter, Facebook, Instagram, Share2, UserPlus, Download, Briefcase, ChevronRight } from 'lucide-react';
 import API_URL from '../config';
 
 const PublicVCard = () => {
     const { slug } = useParams();
+    const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [currentUserId, setCurrentUserId] = useState(null);
+    const [connectLoading, setConnectLoading] = useState(false);
+    const [connectMessage, setConnectMessage] = useState(null);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -23,7 +28,24 @@ const PublicVCard = () => {
             }
         };
 
+        const checkAuth = async () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const res = await axios.get(`${API_URL}/api/vcard/profile`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    setIsAuthenticated(true);
+                    setCurrentUserId(res.data._id);
+                } catch (err) {
+                    console.error('Auth check failed:', err);
+                    setIsAuthenticated(false);
+                }
+            }
+        };
+
         fetchUser();
+        checkAuth();
     }, [slug]);
 
     if (loading) return (
@@ -41,7 +63,7 @@ const PublicVCard = () => {
 
     const {
         name, position, company_name, company_address, company_website,
-        email, phone, bio, profile_picture, social_links
+        email, phone, bio, profile_picture, background_picture, social_links
     } = user;
 
     const handleDownloadVCard = () => {
@@ -64,6 +86,42 @@ END:VCARD`;
         a.click();
     };
 
+    const handleConnect = async () => {
+        // Check if authenticated
+        if (!isAuthenticated) {
+            navigate('/login');
+            return;
+        }
+
+        // Check if viewing own VCard
+        if (user._id === currentUserId) {
+            setConnectMessage({ type: 'error', text: 'You cannot connect to your own VCard' });
+            setTimeout(() => setConnectMessage(null), 3000);
+            return;
+        }
+
+        setConnectLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post(
+                `${API_URL}/api/vcard/connect/${slug}`,
+                {},
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setConnectMessage({ type: 'success', text: res.data.message });
+            setTimeout(() => setConnectMessage(null), 3000);
+        } catch (err) {
+            console.error('Connect error:', err);
+            const errorMsg = err.response?.data?.message || 'Failed to connect';
+            setConnectMessage({ type: 'error', text: errorMsg });
+            setTimeout(() => setConnectMessage(null), 3000);
+        } finally {
+            setConnectLoading(false);
+        }
+    };
+
+    const isOwnVCard = isAuthenticated && user && user._id === currentUserId;
+
     return (
         <div className="min-h-screen bg-slate-50 flex items-center justify-center p-0 md:p-6 lg:p-12 font-sans selection:bg-amber-100 selection:text-amber-900">
             {/* Background Decor */}
@@ -76,11 +134,19 @@ END:VCARD`;
 
                 {/* Header / Cover */}
                 <div className="h-44 relative bg-slate-900 overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-950"></div>
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
-
-                    {/* Abstract Shapes */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+                    {background_picture ? (
+                        <img
+                            src={background_picture.startsWith('http') ? background_picture : `${API_URL}${background_picture}`}
+                            alt="Cover"
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <>
+                            <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-950"></div>
+                            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+                        </>
+                    )}
                 </div>
 
                 <div className="px-8 pb-12 -mt-20 relative flex-1 flex flex-col">
@@ -107,6 +173,16 @@ END:VCARD`;
                         <p className="text-slate-500 text-sm font-medium">{company_name}</p>
                     </div>
 
+                    {/* Connect Message */}
+                    {connectMessage && (
+                        <div className={`mb-6 p-3 rounded-lg text-sm text-center ${connectMessage.type === 'success'
+                                ? 'bg-green-50 text-green-700 border border-green-200'
+                                : 'bg-red-50 text-red-700 border border-red-200'
+                            }`}>
+                            {connectMessage.text}
+                        </div>
+                    )}
+
                     {/* Action Buttons */}
                     <div className="grid grid-cols-2 gap-4 mb-10">
                         <button
@@ -116,9 +192,20 @@ END:VCARD`;
                             <Download size={18} />
                             Save
                         </button>
-                        <button className="flex items-center justify-center gap-2 bg-white text-slate-900 border border-slate-200 py-3.5 rounded-xl font-semibold text-sm hover:bg-slate-50 transition-colors shadow-sm">
-                            <UserPlus size={18} />
-                            Connect
+                        <button
+                            onClick={handleConnect}
+                            disabled={isOwnVCard || connectLoading}
+                            className={`flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm transition-colors shadow-sm ${isOwnVCard
+                                    ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                                    : 'bg-white text-slate-900 border border-slate-200 hover:bg-slate-50'
+                                }`}
+                        >
+                            {connectLoading ? (
+                                <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
+                            ) : (
+                                <UserPlus size={18} />
+                            )}
+                            {isOwnVCard ? "That's You!" : 'Connect'}
                         </button>
                     </div>
 

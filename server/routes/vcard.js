@@ -5,7 +5,7 @@ const path = require('path');
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const User = require('../models/User');
-// const Client = require('../models/Client'); // Will need this later for "Add to Network"
+const Client = require('../models/Client');
 
 // Configure Cloudinary
 cloudinary.config({
@@ -204,6 +204,81 @@ router.put('/profile', async (req, res) => {
     } catch (err) {
         log(`Error: ${err.message}`);
         console.error('PUT /profile - Error:', err);
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// POST /connect/:slug - Connect with a VCard user (add to client list)
+router.post('/connect/:slug', async (req, res) => {
+    try {
+        const { slug } = req.params;
+
+        // Verify authentication
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        if (!token) {
+            return res.status(401).json({ message: 'Authentication required' });
+        }
+
+        const jwt = require('jsonwebtoken');
+        let decoded;
+        try {
+            decoded = jwt.verify(token, process.env.JWT_SECRET);
+        } catch (err) {
+            return res.status(401).json({ message: 'Invalid token' });
+        }
+
+        const currentUserId = decoded.user.id;
+
+        // Find the VCard owner by slug
+        const vcardOwner = await User.findOne({ vcard_slug: slug });
+        if (!vcardOwner) {
+            return res.status(404).json({ message: 'VCard not found' });
+        }
+
+        // Prevent self-connection
+        if (vcardOwner._id.toString() === currentUserId) {
+            return res.status(400).json({ message: 'You cannot connect to your own VCard' });
+        }
+
+        // Check if already connected
+        const existingClient = await Client.findOne({
+            owner_id: currentUserId,
+            'data.email': vcardOwner.email
+        });
+
+        if (existingClient) {
+            return res.status(400).json({ message: 'Already connected with this user' });
+        }
+
+        // Get current user for corporate_id
+        const currentUser = await User.findById(currentUserId);
+
+        // Create new client entry
+        const newClient = new Client({
+            owner_id: currentUserId,
+            corporate_id: currentUser.corporate_id,
+            visibility: 'Private',
+            data: {
+                name: vcardOwner.name,
+                position: vcardOwner.position,
+                email: vcardOwner.email,
+                phone: vcardOwner.phone,
+                company_name: vcardOwner.company_name,
+                company_address: vcardOwner.company_address
+            },
+            source: 'vCard',
+            pdpa_consent: false
+        });
+
+        await newClient.save();
+
+        res.json({
+            message: 'Successfully connected!',
+            client: newClient
+        });
+
+    } catch (err) {
+        console.error('POST /connect/:slug - Error:', err);
         res.status(500).json({ message: 'Server Error' });
     }
 });
