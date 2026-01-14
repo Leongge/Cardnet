@@ -364,6 +364,47 @@ CRITICAL Guidelines:
             }
         }
 
+        // CONTRAST VALIDATION AND AUTO-CORRECTION
+        const getContrastRatio = (color1, color2) => {
+            const getLuminance = (hex) => {
+                const rgb = parseInt(hex.slice(1), 16);
+                const r = (rgb >> 16) & 0xff;
+                const g = (rgb >> 8) & 0xff;
+                const b = (rgb >> 0) & 0xff;
+                const [rs, gs, bs] = [r, g, b].map(c => {
+                    c = c / 255;
+                    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+                });
+                return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+            };
+            const l1 = getLuminance(color1);
+            const l2 = getLuminance(color2);
+            const lighter = Math.max(l1, l2);
+            const darker = Math.min(l1, l2);
+            return (lighter + 0.05) / (darker + 0.05);
+        };
+
+        // Check and fix text_color vs background_color contrast
+        const textBgContrast = getContrastRatio(designConfig.text_color, designConfig.background_color);
+        if (textBgContrast < 4.5) {
+            // Auto-fix: If background is dark, make text light; if light, make text dark
+            const bgLuminance = parseInt(designConfig.background_color.slice(1), 16);
+            const isDarkBg = bgLuminance < 0x888888;
+            designConfig.text_color = isDarkBg ? '#ffffff' : '#000000';
+            console.log(`Auto-corrected text_color for contrast. Original contrast: ${textBgContrast.toFixed(2)}`);
+        }
+
+        // Check and fix secondary_color vs background_color contrast
+        const secondaryBgContrast = getContrastRatio(designConfig.secondary_color, designConfig.background_color);
+        if (secondaryBgContrast < 3.0) {
+            // Auto-fix secondary color
+            const bgLuminance = parseInt(designConfig.background_color.slice(1), 16);
+            const isDarkBg = bgLuminance < 0x888888;
+            // Keep the hue but adjust lightness
+            designConfig.secondary_color = isDarkBg ? designConfig.accent_color : designConfig.primary_color;
+            console.log(`Auto-corrected secondary_color for contrast. Original contrast: ${secondaryBgContrast.toFixed(2)}`);
+        }
+
         res.json({ design_config: designConfig });
 
     } catch (err) {
