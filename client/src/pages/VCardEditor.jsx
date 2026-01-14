@@ -205,7 +205,7 @@ const VCardEditor = () => {
                                         <div className="flex items-center gap-4">
                                             <div className="relative w-16 h-16 rounded-full bg-slate-100 overflow-hidden border border-slate-200 shrink-0">
                                                 {formData.profile_picture ? (
-                                                    <img src={formData.profile_picture} alt="Profile" className="w-full h-full object-cover" />
+                                                    <img src={formData.profile_picture.startsWith('http') ? formData.profile_picture : `${API_URL}${formData.profile_picture}`} alt="Profile" className="w-full h-full object-cover" />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-slate-400">
                                                         <UserPlus size={24} />
