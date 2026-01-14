@@ -2,33 +2,34 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const User = require('../models/User');
 // const Client = require('../models/Client'); // Will need this later for "Add to Network"
 
-// Configure Multer Storage
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, '../uploads'));
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+// Configure Cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Configure Cloudinary Storage
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'vcard_profiles',
+        allowed_formats: ['jpg', 'png', 'jpeg', 'webp', 'gif'],
+        public_id: (req, file) => {
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+            return file.fieldname + '-' + uniqueSuffix;
+        }
     }
 });
 
 const upload = multer({
     storage: storage,
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-    fileFilter: (req, file, cb) => {
-        const filetypes = /jpeg|jpg|png|gif|webp/;
-        const mimetype = filetypes.test(file.mimetype);
-        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-
-        if (mimetype && extname) {
-            return cb(null, true);
-        }
-        cb(new Error('Error: Images Only!'));
-    }
 });
 
 // GET /profile - Get my VCard profile (Authenticated)
@@ -89,9 +90,9 @@ router.post('/upload', (req, res) => {
             if (!req.file) {
                 return res.status(400).json({ message: 'No file uploaded' });
             }
-            // Return the URL to access the file
-            const fileUrl = `/uploads/${req.file.filename}`;
-            console.log('File uploaded successfully:', fileUrl);
+            // Return the Cloudinary URL (path contains the secure_url)
+            const fileUrl = req.file.path;
+            console.log('File uploaded to Cloudinary successfully:', fileUrl);
             res.json({ url: fileUrl });
         } catch (err) {
             console.error('Server error during upload:', err);
