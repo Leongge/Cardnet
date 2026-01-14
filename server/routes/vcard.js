@@ -305,6 +305,7 @@ Return ONLY a valid JSON object with this exact structure (no markdown, no expla
   "secondary_color": "#hexcode",
   "accent_color": "#hexcode",
   "text_color": "#hexcode",
+  "background_color": "#hexcode",
   "layout_style": "centered|left-aligned|split|minimal",
   "font_family": "modern|classic|playful",
   "heading_size": "small|medium|large",
@@ -319,6 +320,7 @@ Guidelines:
 - secondary_color: complementary accent color (for subtitles, labels)
 - accent_color: call-to-action color (buttons, links)
 - text_color: main text color
+- background_color: card background color (usually light for readability)
 - layout_style: overall card layout structure
 - font_family: typography style matching the theme
 - heading_size: size of name/title elements
@@ -348,7 +350,7 @@ Guidelines:
         }
 
         // Validate required fields
-        const requiredFields = ['primary_color', 'secondary_color', 'accent_color', 'text_color', 'layout_style', 'font_family', 'heading_size', 'spacing', 'show_decorations', 'card_shape'];
+        const requiredFields = ['primary_color', 'secondary_color', 'accent_color', 'text_color', 'background_color', 'layout_style', 'font_family', 'heading_size', 'spacing', 'show_decorations', 'card_shape'];
         for (const field of requiredFields) {
             if (designConfig[field] === undefined) {
                 return res.status(500).json({ message: `AI response missing field: ${field}` });
@@ -415,6 +417,7 @@ router.post('/design/reset', async (req, res) => {
             secondary_color: '#f59e0b',
             accent_color: '#3b82f6',
             text_color: '#0f172a',
+            background_color: '#ffffff',
             layout_style: 'centered',
             font_family: 'modern',
             heading_size: 'medium',

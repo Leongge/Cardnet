@@ -618,7 +618,9 @@ const VCardEditor = () => {
 
                     {/* Device Frame */}
                     <div className="relative mx-auto border-8 border-slate-900 bg-slate-900 rounded-[3rem] h-[700px] w-[360px] shadow-2xl overflow-hidden ring-1 ring-slate-900/5">
-                        <div className="h-full w-full bg-slate-50 relative overflow-y-auto custom-scrollbar">
+                        <div className="h-full w-full relative overflow-y-auto custom-scrollbar" style={{
+                            backgroundColor: previewDesign?.background_color || '#f8fafc'
+                        }}>
 
                             {/* ----- PREVIEW CONTENT STARTS (Matches PublicVCard Light) ----- */}
 

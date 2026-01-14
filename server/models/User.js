@@ -33,6 +33,7 @@ const UserSchema = new mongoose.Schema({
         secondary_color: { type: String, default: '#f59e0b' },    // amber-500
         accent_color: { type: String, default: '#3b82f6' },       // blue-500
         text_color: { type: String, default: '#0f172a' },         // slate-950
+        background_color: { type: String, default: '#ffffff' },   // white
 
         // Layout
         layout_style: { type: String, default: 'centered' },      // centered, left-aligned, split, minimal
