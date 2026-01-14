@@ -485,8 +485,8 @@ const VCardEditor = () => {
 
                                 {designMessage && (
                                     <div className={`mb-4 p-3 rounded-lg text-sm ${designMessage.type === 'success'
-                                            ? 'bg-green-50 text-green-700 border border-green-200'
-                                            : 'bg-red-50 text-red-700 border border-red-200'
+                                        ? 'bg-green-50 text-green-700 border border-green-200'
+                                        : 'bg-red-50 text-red-700 border border-red-200'
                                         }`}>
                                         {designMessage.text}
                                     </div>
@@ -614,14 +614,16 @@ const VCardEditor = () => {
                             {/* ----- PREVIEW CONTENT STARTS (Matches PublicVCard Light) ----- */}
 
                             {/* Header / Cover */}
-                            <div className="h-44 relative bg-slate-900 overflow-hidden">
+                            <div className="h-44 relative overflow-hidden" style={{
+                                backgroundColor: previewDesign?.primary_color || '#1e293b'
+                            }}>
                                 {formData.background_picture ? (
                                     <img
                                         src={formData.background_picture.startsWith('http') ? formData.background_picture : `${API_URL}${formData.background_picture}`}
                                         alt="Cover"
                                         className="w-full h-full object-cover"
                                     />
-                                ) : (
+                                ) : !previewDesign && (
                                     <>
                                         <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-950"></div>
                                         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
@@ -650,17 +652,24 @@ const VCardEditor = () => {
                                 {/* Intro */}
                                 <div className="text-center mb-8">
                                     <h1 className="text-xl font-bold text-slate-900 mb-1 tracking-tight">{formData.name || 'Your Name'}</h1>
-                                    <p className="text-amber-600 text-[10px] font-bold uppercase tracking-widest mb-1">{formData.position || 'Your Position'}</p>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{
+                                        color: previewDesign?.secondary_color || '#f59e0b'
+                                    }}>{formData.position || 'Your Position'}</p>
                                     <p className="text-slate-500 text-xs font-medium">{formData.company_name || 'Company Name'}</p>
                                 </div>
 
                                 {/* Action Buttons */}
                                 <div className="grid grid-cols-2 gap-3 mb-8">
-                                    <button className="flex items-center justify-center gap-2 bg-slate-900 text-white py-3 rounded-xl font-semibold text-xs shadow-lg shadow-slate-900/20">
+                                    <button className="flex items-center justify-center gap-2 text-white py-3 rounded-xl font-semibold text-xs shadow-lg" style={{
+                                        backgroundColor: previewDesign?.primary_color || '#1e293b'
+                                    }}>
                                         <Download size={14} />
                                         Save
                                     </button>
-                                    <button className="flex items-center justify-center gap-2 bg-white text-slate-900 border border-slate-200 py-3 rounded-xl font-semibold text-xs shadow-sm">
+                                    <button className="flex items-center justify-center gap-2 bg-white border py-3 rounded-xl font-semibold text-xs shadow-sm" style={{
+                                        borderColor: previewDesign?.accent_color || '#3b82f6',
+                                        color: previewDesign?.accent_color || '#3b82f6'
+                                    }}>
                                         <UserPlus size={14} />
                                         Connect
                                     </button>
