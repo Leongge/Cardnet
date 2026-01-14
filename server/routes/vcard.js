@@ -314,19 +314,26 @@ Return ONLY a valid JSON object with this exact structure (no markdown, no expla
   "card_shape": "rounded|sharp|pill"
 }
 
-Guidelines:
-- Choose harmonious, accessible colors with good contrast
-- primary_color: main background/header color
-- secondary_color: complementary accent color (for subtitles, labels)
-- accent_color: call-to-action color (buttons, links)
-- text_color: main text color
-- background_color: card background color (usually light for readability)
-- layout_style: overall card layout structure
-- font_family: typography style matching the theme
-- heading_size: size of name/title elements
-- spacing: overall spacing between elements
-- show_decorations: whether to show decorative elements
-- card_shape: border radius style`;
+CRITICAL Guidelines:
+1. CONTRAST IS MANDATORY:
+   - If background_color is dark (#000000-#666666), text_color MUST be light (#CCCCCC-#FFFFFF)
+   - If background_color is light (#CCCCCC-#FFFFFF), text_color MUST be dark (#000000-#444444)
+   - Ensure WCAG AA contrast ratio (4.5:1 minimum)
+
+2. Theme-appropriate colors:
+   - "tech/technology/modern": Use dark backgrounds (#0a0a0a, #1a1a2e, #0f172a) with bright accents (#00d4ff, #7c3aed, #3b82f6)
+   - "professional/business": Use navy/slate backgrounds (#1e293b, #334155) or clean whites (#ffffff) with blue accents
+   - "creative/playful": Use vibrant backgrounds with complementary accents
+   - "minimal/elegant": Use light backgrounds (#f8fafc, #ffffff) with subtle dark text
+
+3. Color roles:
+   - primary_color: Header/banner background
+   - secondary_color: Subtitle/label color (must contrast with background_color)
+   - accent_color: Buttons and links (must pop against background_color)
+   - text_color: Main body text (must have high contrast with background_color)
+   - background_color: Card background (choose based on theme)
+
+4. Accessibility: All text must be readable. Never use similar colors for text and background.`;
 
         const completion = await openai.chat.completions.create({
             model: "gpt-4o-mini",
