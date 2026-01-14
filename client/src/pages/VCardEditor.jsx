@@ -287,7 +287,7 @@ const VCardEditor = () => {
                                             value={formData.phone}
                                             onChange={handleChange}
                                             className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-slate-400"
-                                            placeholder="+1 (555) 000-0000"
+                                            placeholder="+60 12-345 6789"
                                         />
                                     </div>
                                     <div className="space-y-2">
