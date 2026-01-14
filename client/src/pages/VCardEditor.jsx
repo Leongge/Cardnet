@@ -433,7 +433,7 @@ const VCardEditor = () => {
                                     <div className="absolute inset-0 rounded-full bg-white p-[3px] shadow-xl">
                                         <div className="w-full h-full rounded-full bg-slate-100 overflow-hidden border border-slate-100">
                                             {formData.profile_picture ? (
-                                                <img src={formData.profile_picture} alt="Preview" className="w-full h-full object-cover" />
+                                                <img src={formData.profile_picture.startsWith('http') ? formData.profile_picture : `${API_URL}${formData.profile_picture}`} alt="Preview" className="w-full h-full object-cover" />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-4xl bg-slate-100 text-slate-400">
                                                     {formData.name?.charAt(0)}
