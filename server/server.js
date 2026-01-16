@@ -67,6 +67,7 @@ app.use('/api/clients', clientRoutes);
 app.use('/api/scan', scanRoutes);
 app.use('/api/campaign', campaignRoutes);
 app.use('/api/team', require('./routes/team'));
+app.use('/api/groups', require('./routes/groups'));
 app.use('/api/platform', require('./routes/platform'));
 app.use('/api/vcard', require('./routes/vcard'));
 

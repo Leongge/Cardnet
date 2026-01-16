@@ -8,6 +8,10 @@ const ClientSchema = new mongoose.Schema({
         enum: ['Private', 'Shared'],
         default: 'Private'
     },
+    shared_groups: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'CorporateGroup'
+    }],
     data: {
         name: { type: String },
         position: { type: String },

@@ -1,19 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchClients } from '../store/clientSlice';
-import { Search, Filter, Send, Users, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { fetchGroups } from '../store/groupSlice';
+import { Search, Filter, Send, Users, Trash2, ChevronDown, ChevronUp, X, Check } from 'lucide-react';
 import axios from 'axios';
 import API_URL from '../config';
 
 const ClientList = () => {
     const dispatch = useDispatch();
     const { clients, loading } = useSelector(state => state.clients);
+    const { groups } = useSelector(state => state.groups);
     const [scope, setScope] = useState('private');
     const [selectedClients, setSelectedClients] = useState([]);
     const [expandedClient, setExpandedClient] = useState(null);
 
+    // Share Modal State
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [shareTarget, setShareTarget] = useState('all'); // 'all' or 'groups'
+    const [selectedGroups, setSelectedGroups] = useState([]);
+
     useEffect(() => {
         dispatch(fetchClients(scope));
+        // Pre-fetch groups so they are ready
+        dispatch(fetchGroups());
     }, [dispatch, scope]);
 
     const handleSelect = (id) => {
@@ -39,20 +48,62 @@ const ClientList = () => {
         }
     };
 
-    const handleShare = async () => {
+    const openShareModal = () => {
         if (selectedClients.length === 0) return alert('Select clients first');
+        setShowShareModal(true);
+        setShareTarget('all');
+        setSelectedGroups([]);
+    };
+
+    const confirmShare = async () => {
         try {
             const token = localStorage.getItem('token');
+            const payload = { clientIds: selectedClients };
+
+            if (shareTarget === 'groups') {
+                if (selectedGroups.length === 0) return alert('Please select at least one group');
+                payload.groupIds = selectedGroups;
+            } else {
+                // If 'all', we might send empty groupIds or handling it backend side? 
+                // Backend logic: if groupIds is provided (even empty), it sets shared_groups. 
+                // To share with "Everyone" (which means empty shared_groups), we pass []? 
+                // Or if we pass nothing, existing logic says?
+                // Backend plan check:
+                // "If groupIds provided... updateData.shared_groups = groupIds"
+                // "else ... updateData.shared_groups = []"
+                // So for 'all', we don't pass groupIds, or pass []. 
+                // To be explicit, let's pass empty array if we mean "Everyone" in a strict system, 
+                // but my backend logic handles undefined as "reset to empty".
+                // Actually my updated backend code:
+                // if (groupIds) { updateData.shared_groups = groupIds } else { updateData.shared_groups = [] }
+                // So if I pass [], it works. If I don't pass it, it works.
+                // But wait, if shareTarget is 'groups', I pass [id, id]. 
+                // If shareTarget is 'all', I should pass [] (empty array) to clear any groups and match "else" block or explicitly match empty array logic?
+                // The backend: if (groupIds) ... else { shared_groups = [] }. 
+                // If I send groupIds: [], it is truthy? No, empty array is truthy in JS.
+                // So `if ([])` is true. `shared_groups` becomes `[]`. Correct.
+                payload.groupIds = [];
+            }
+
             await axios.put(`${API_URL}/api/clients/share`,
-                { clientIds: selectedClients },
+                payload,
                 { headers: { 'x-auth-token': token } }
             );
             alert('Clients shared to corporate pool successfully!');
             setSelectedClients([]);
+            setShowShareModal(false);
             dispatch(fetchClients(scope)); // Refresh list
         } catch (err) {
             console.error(err);
             alert(err.response?.data?.msg || 'Share failed');
+        }
+    };
+
+    const toggleGroupSelect = (groupId) => {
+        if (selectedGroups.includes(groupId)) {
+            setSelectedGroups(selectedGroups.filter(id => id !== groupId));
+        } else {
+            setSelectedGroups([...selectedGroups, groupId]);
         }
     };
 
@@ -67,7 +118,6 @@ const ClientList = () => {
 
         try {
             const token = localStorage.getItem('token');
-            // Axios delete with body requires 'data' key
             await axios.delete(`${API_URL}/api/clients`, {
                 headers: { 'x-auth-token': token },
                 data: { clientIds: selectedClients, scope }
@@ -82,7 +132,79 @@ const ClientList = () => {
     };
 
     return (
-        <div className="space-y-4 sm:space-y-6 px-2 sm:px-0">
+        <div className="space-y-4 sm:space-y-6 px-2 sm:px-0 relative">
+            {/* Share Modal */}
+            {showShareModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95">
+                        <div className="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
+                            <h3 className="text-lg font-bold text-gray-800">Share to Corporate Pool</h3>
+                            <button onClick={() => setShowShareModal(false)} className="text-gray-500 hover:text-gray-700">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <p className="text-sm text-gray-600">
+                                Sharing <strong>{selectedClients.length}</strong> clients. Who can see them?
+                            </p>
+
+                            <div className="space-y-3">
+                                <label className={`flex items-start p-3 border rounded-lg cursor-pointer transition ${shareTarget === 'all' ? 'border-primary bg-blue-50' : 'border-gray-200'}`}>
+                                    <input
+                                        type="radio"
+                                        name="shareTarget"
+                                        value="all"
+                                        checked={shareTarget === 'all'}
+                                        onChange={() => setShareTarget('all')}
+                                        className="mt-1 text-primary focus:ring-primary"
+                                    />
+                                    <div className="ml-3">
+                                        <span className="block text-sm font-medium text-gray-900">Everyone</span>
+                                        <span className="block text-xs text-gray-500">All corporate members can view these clients.</span>
+                                    </div>
+                                </label>
+
+                                <label className={`flex items-start p-3 border rounded-lg cursor-pointer transition ${shareTarget === 'groups' ? 'border-primary bg-blue-50' : 'border-gray-200'}`}>
+                                    <input
+                                        type="radio"
+                                        name="shareTarget"
+                                        value="groups"
+                                        checked={shareTarget === 'groups'}
+                                        onChange={() => setShareTarget('groups')}
+                                        className="mt-1 text-primary focus:ring-primary"
+                                    />
+                                    <div className="ml-3 w-full">
+                                        <span className="block text-sm font-medium text-gray-900">Specific Groups</span>
+                                        <span className="block text-xs text-gray-500">Only members of selected groups can view.</span>
+
+                                        {shareTarget === 'groups' && (
+                                            <div className="mt-3 space-y-2 border-t pt-2 border-blue-100 max-h-40 overflow-y-auto">
+                                                {groups.length === 0 && <p className="text-xs text-red-500">No groups found.</p>}
+                                                {groups.map(group => (
+                                                    <label key={group._id} className="flex items-center space-x-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedGroups.includes(group._id)}
+                                                            onChange={() => toggleGroupSelect(group._id)}
+                                                            className="rounded text-primary focus:ring-primary"
+                                                        />
+                                                        <span className="text-sm text-gray-700">{group.name}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        <div className="px-6 py-4 bg-gray-50 flex justify-end gap-3">
+                            <button onClick={() => setShowShareModal(false)} className="px-4 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
+                            <button onClick={confirmShare} className="px-4 py-2 bg-primary text-white rounded hover:bg-blue-600">Confirm Share</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 className="text-xl sm:text-2xl font-bold">Client Directory</h2>
 
@@ -105,7 +227,7 @@ const ClientList = () => {
             {/* Mobile Action Buttons */}
             {selectedClients.length > 0 && (
                 <div className="lg:hidden flex flex-col gap-2">
-                    <button onClick={handleShare} className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700">
+                    <button onClick={openShareModal} className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700">
                         <Users size={18} /> Share to Corporate
                     </button>
                     <button onClick={handleDelete} className="flex items-center justify-center gap-2 bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700">
@@ -125,7 +247,7 @@ const ClientList = () => {
                 </div>
                 {selectedClients.length > 0 && (
                     <div className="flex gap-2 animate-in fade-in slide-in-from-right-4">
-                        <button onClick={handleShare} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        <button onClick={openShareModal} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                             <Users size={18} /> Share to Corporate
                         </button>
                         <button onClick={handleDelete} className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
@@ -161,9 +283,21 @@ const ClientList = () => {
                                                 <h3 className="font-semibold text-gray-900">{client.data.name}</h3>
                                                 <p className="text-sm text-gray-600">{client.data.position}</p>
                                             </div>
-                                            <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 whitespace-nowrap">
-                                                {client.data.category}
-                                            </span>
+                                            <div className="flex flex-col items-end gap-1">
+                                                <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 whitespace-nowrap">
+                                                    {client.data.category}
+                                                </span>
+                                                {/* Group Badges Mobile */}
+                                                {client.shared_groups && client.shared_groups.length > 0 && (
+                                                    <div className="flex flex-wrap justify-end gap-1">
+                                                        {client.shared_groups.map(g => (
+                                                            <span key={g._id} className="text-[10px] bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded border border-purple-200">
+                                                                {g.name}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
 
                                         <div className="space-y-2 text-sm">
@@ -244,9 +378,25 @@ const ClientList = () => {
                                         <div className="text-sm text-gray-500">{client.data.phone}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                            {client.data.category}
-                                        </span>
+                                        <div className="flex flex-col gap-1">
+                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full w-fit ${client.visibility === 'Shared' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
+                                                {client.visibility === 'Shared' ? 'Corporate' : client.data.category}
+                                            </span>
+
+                                            {/* Group Badges Desktop */}
+                                            {client.visibility === 'Shared' && client.shared_groups && client.shared_groups.length > 0 && (
+                                                <div className="flex flex-col gap-1 mt-1">
+                                                    <span className="text-[10px] text-gray-500">Shared to:</span>
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {client.shared_groups.map(g => (
+                                                            <span key={g._id} className="text-[10px] bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-100">
+                                                                {g.name}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             ))

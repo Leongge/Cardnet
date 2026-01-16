@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Client = require('../models/Client');
+const CorporateGroup = require('../models/CorporateGroup');
 const jwt = require('jsonwebtoken');
 
 // Middleware to verify token (Simplified inline for now)
@@ -29,16 +30,40 @@ router.get('/', auth, async (req, res) => {
 
         let query = {};
         if (scope === 'corporate' && currentUser.corporate_id) {
-            query = {
-                corporate_id: currentUser.corporate_id,
-                visibility: 'Shared'
-            };
+            // Find which groups the current user is in
+            // Note: Admins see all? Alternatively, stick to group logic.
+            // Let's allow CorporateAdmin to see ALL shared clients regardless of group
+            // for oversight. But for Members, enforce group check.
+
+            if (currentUser.role === 'CorporateAdmin') {
+                query = {
+                    corporate_id: currentUser.corporate_id,
+                    visibility: 'Shared'
+                };
+            } else {
+                const userGroups = await CorporateGroup.find({
+                    corporate_id: currentUser.corporate_id,
+                    members: req.user.id
+                }).distinct('_id');
+
+                query = {
+                    corporate_id: currentUser.corporate_id,
+                    visibility: 'Shared',
+                    $or: [
+                        { shared_groups: { $size: 0 } }, // Shared with everyone (empty array)
+                        { shared_groups: { $exists: false } }, // Backward compatibility
+                        { shared_groups: { $in: userGroups } } // Shared with specific group user is in
+                    ]
+                };
+            }
         } else {
             // Personal
             query = { owner_id: req.user.id };
         }
 
-        const clients = await Client.find(query).sort({ created_at: -1 });
+        const clients = await Client.find(query)
+            .populate('shared_groups', 'name')
+            .sort({ created_at: -1 });
         res.json(clients);
     } catch (err) {
         console.error(err.message);
@@ -109,7 +134,7 @@ router.delete('/', auth, async (req, res) => {
 // Bulk Share to Corporate
 router.put('/share', auth, async (req, res) => {
     try {
-        const { clientIds } = req.body;
+        const { clientIds, groupIds } = req.body;
 
         // Fetch user to ensure they are part of a corporation
         const userStore = require('../models/User');
@@ -119,67 +144,34 @@ router.put('/share', auth, async (req, res) => {
             return res.status(400).json({ msg: 'You do not belong to a corporation.' });
         }
 
+        // Prepare update object
+        const updateData = {
+            visibility: 'Shared',
+            corporate_id: currentUser.corporate_id
+        };
+
+        // If groupIds provided (even empty array to reset to "Everyone"), update it
+        // If undefined, maybe keep existing? No, "Share" usually implies setting new state.
+        // Let's assume if groupIds is passed, we use it. If not passed, we default to empty (Everyone)?
+        // Or if the user selects "Public to Corp", groupIds = [].
+        // If user selects "Group A", groupIds = [id].
+
+        if (groupIds) {
+            updateData.shared_groups = groupIds;
+        } else {
+            // If groupIds not provided, default to [] (Everyone) ONLY IF it's a fresh share?
+            // But what if they just want to move to shared?
+            // We'll set it to [] to be safe if not provided, ensuring "Shared" means "Shared with Corp" by default.
+            updateData.shared_groups = [];
+        }
+
         // Update clients
         await Client.updateMany(
             { _id: { $in: clientIds }, owner_id: req.user.id },
-            { $set: { visibility: 'Shared', corporate_id: currentUser.corporate_id } }
+            { $set: updateData }
         );
 
         res.json({ msg: 'Clients shared to corporate pool' });
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    }
-});
-
-// Connect via vCard Slug
-router.post('/connect/:slug', auth, async (req, res) => {
-    try {
-        const { slug } = req.params;
-        const User = require('../models/User');
-
-        // 1. Find the vCard owner
-        const targetUser = await User.findOne({ vcard_slug: slug });
-        if (!targetUser) {
-            return res.status(404).json({ msg: 'vCard not found' });
-        }
-
-        // 2. Check if connecting to self
-        if (targetUser._id.toString() === req.user.id) {
-            return res.status(400).json({ msg: 'You cannot connect to your own vCard' });
-        }
-
-        // 3. Check if already connected
-        const existingConnection = await Client.findOne({
-            owner_id: req.user.id,
-            'data.email': targetUser.email
-        });
-
-        if (existingConnection) {
-            return res.status(400).json({ msg: 'You are already connected to this person' });
-        }
-
-        // 4. Create new Client entry for the current user
-        const currentUser = await User.findById(req.user.id);
-
-        const newClient = new Client({
-            owner_id: req.user.id,
-            corporate_id: currentUser.corporate_id,
-            visibility: 'Private',
-            data: {
-                name: targetUser.name,
-                position: targetUser.position,
-                email: targetUser.email,
-                phone: targetUser.phone,
-                company_name: targetUser.company_name,
-                company_address: targetUser.company_address,
-                category: 'vCard Connection'
-            },
-            source: 'vCard'
-        });
-
-        await newClient.save();
-        res.json({ msg: `Successfully connected to ${targetUser.name}`, client: newClient });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
