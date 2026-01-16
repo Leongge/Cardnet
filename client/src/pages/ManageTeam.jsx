@@ -82,9 +82,11 @@ const ManageTeam = () => {
         }
     };
 
-    if (user.role !== 'CorporateAdmin') {
-        return <div className="text-center p-10 text-red-500">Access Denied. Corp Admins Only.</div>;
-    }
+    // If user is CorporateMember, they can access but 'members' tab is read-only or limited.
+    // We'll allow access but hide "Add Member" button below.
+    const isCorpAdmin = user.role === 'CorporateAdmin';
+
+    // if (user.role !== 'CorporateAdmin') { ... } // Removed blocking check
 
     return (
         <div className="space-y-6">
@@ -114,12 +116,14 @@ const ManageTeam = () => {
             {activeTab === 'members' && (
                 <div className="space-y-6 animate-in fade-in">
                     <div className="flex justify-end">
-                        <button
-                            onClick={() => setShowAddForm(!showAddForm)}
-                            className="bg-primary text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center gap-2"
-                        >
-                            <Plus size={18} /> Add Member
-                        </button>
+                        {isCorpAdmin && (
+                            <button
+                                onClick={() => setShowAddForm(!showAddForm)}
+                                className="bg-primary text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center gap-2"
+                            >
+                                <Plus size={18} /> Add Member
+                            </button>
+                        )}
                     </div>
 
                     {showAddForm && (

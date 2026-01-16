@@ -58,9 +58,17 @@ router.get('/', auth, async (req, res) => {
 
 // @route   POST /api/groups
 // @desc    Create a new group
-// @access  Corporate Admin
-router.post('/', auth, adminAuth, async (req, res) => {
+// @route   POST /api/groups
+// @desc    Create a new group
+// @access  Corporate Member (Any member can create a group)
+router.post('/', auth, async (req, res) => {
     try {
+        const user = await User.findById(req.user.id);
+        if (!user.corporate_id) {
+            return res.status(403).json({ msg: 'Not part of a corporation' });
+        }
+        // Set corporate_id for use below
+        req.user.corporate_id = user.corporate_id;
         const { name, members } = req.body;
 
         const newGroup = new CorporateGroup({
