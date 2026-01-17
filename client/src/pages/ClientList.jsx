@@ -131,6 +131,14 @@ const ClientList = () => {
         }
     };
 
+    const handleSelectAll = () => {
+        if (clients.length > 0 && selectedClients.length === clients.length) {
+            setSelectedClients([]);
+        } else {
+            setSelectedClients(clients.map(c => c._id));
+        }
+    };
+
     return (
         <div className="space-y-4 sm:space-y-6 px-2 sm:px-0 relative">
             {/* Share Modal */}
@@ -342,7 +350,11 @@ const ClientList = () => {
                     <thead className="bg-gray-50">
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-10">
-                                <input type="checkbox" />
+                                <input
+                                    type="checkbox"
+                                    checked={clients.length > 0 && selectedClients.length === clients.length}
+                                    onChange={handleSelectAll}
+                                />
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name / Position</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
@@ -380,7 +392,7 @@ const ClientList = () => {
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex flex-col gap-1">
                                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full w-fit ${client.visibility === 'Shared' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
-                                                {client.visibility === 'Shared' ? 'Corporate' : client.data.category}
+                                                {client.data.category}
                                             </span>
 
                                             {/* Group Badges Desktop */}

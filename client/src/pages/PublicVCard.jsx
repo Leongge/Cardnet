@@ -104,6 +104,8 @@ END:VCARD`;
     const handleConnect = async () => {
         // Check if authenticated
         if (!isAuthenticated) {
+            localStorage.setItem('redirectPath', window.location.pathname);
+            localStorage.setItem('pendingConnectSlug', slug);
             navigate('/login');
             return;
         }
@@ -115,6 +117,10 @@ END:VCARD`;
             return;
         }
 
+        performConnect();
+    };
+
+    const performConnect = async () => {
         setConnectLoading(true);
         try {
             const token = localStorage.getItem('token');
@@ -134,6 +140,14 @@ END:VCARD`;
             setConnectLoading(false);
         }
     };
+
+    // Auto-connect after login
+    useEffect(() => {
+        if (isAuthenticated && localStorage.getItem('pendingConnectSlug') === slug) {
+            localStorage.removeItem('pendingConnectSlug');
+            performConnect();
+        }
+    }, [isAuthenticated, slug]);
 
     const isOwnVCard = isAuthenticated && user && user._id === currentUserId;
 

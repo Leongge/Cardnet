@@ -22,8 +22,14 @@ const Login = () => {
         // Login Only
         const res = await dispatch(login({ email: formData.email, password: formData.password }));
         if (!res.error) {
-            // Redirect to app dashboard
-            navigate('/app/dashboard');
+            // Check for redirect path
+            const redirectPath = localStorage.getItem('redirectPath');
+            if (redirectPath) {
+                localStorage.removeItem('redirectPath');
+                navigate(redirectPath);
+            } else {
+                navigate('/app/dashboard');
+            }
         }
     };
 
