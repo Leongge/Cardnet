@@ -30,6 +30,9 @@ function App() {
 
                 {/* Public vCard route */}
                 <Route path="/u/:slug" element={<PublicVCard />} />
+
+                {/* 404 Route */}
+                <Route path="*" element={<div className="min-h-screen flex items-center justify-center text-gray-500">Page Not Found (404)</div>} />
             </Routes>
         </Router>
     )
