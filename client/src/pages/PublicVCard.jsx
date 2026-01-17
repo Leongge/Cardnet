@@ -15,6 +15,35 @@ const PublicVCard = () => {
     const [connectLoading, setConnectLoading] = useState(false);
     const [connectMessage, setConnectMessage] = useState(null);
 
+    const performConnect = async () => {
+        setConnectLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post(
+                `${API_URL}/api/vcard/connect/${slug}`,
+                {},
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setConnectMessage({ type: 'success', text: res.data.message });
+            setTimeout(() => setConnectMessage(null), 3000);
+        } catch (err) {
+            // console.error('Connect error:', err);
+            const errorMsg = err.response?.data?.message || 'Failed to connect';
+            setConnectMessage({ type: 'error', text: errorMsg });
+            setTimeout(() => setConnectMessage(null), 3000);
+        } finally {
+            setConnectLoading(false);
+        }
+    };
+
+    // Auto-connect after login - MOVED TO TOP to avoid Hook Error #310
+    useEffect(() => {
+        if (isAuthenticated && localStorage.getItem('pendingConnectSlug') === slug) {
+            localStorage.removeItem('pendingConnectSlug');
+            performConnect();
+        }
+    }, [isAuthenticated, slug]);
+
     useEffect(() => {
         const fetchUser = async () => {
             try {
@@ -35,6 +64,7 @@ const PublicVCard = () => {
                     const res = await axios.get(`${API_URL}/api/vcard/profile`, {
                         headers: { Authorization: `Bearer ${token}` }
                     });
+                    // Only set if component is mounted - usually fine in hook
                     setIsAuthenticated(true);
                     setCurrentUserId(res.data._id);
                 } catch (err) {
@@ -119,35 +149,6 @@ END:VCARD`;
 
         performConnect();
     };
-
-    const performConnect = async () => {
-        setConnectLoading(true);
-        try {
-            const token = localStorage.getItem('token');
-            const res = await axios.post(
-                `${API_URL}/api/vcard/connect/${slug}`,
-                {},
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setConnectMessage({ type: 'success', text: res.data.message });
-            setTimeout(() => setConnectMessage(null), 3000);
-        } catch (err) {
-            console.error('Connect error:', err);
-            const errorMsg = err.response?.data?.message || 'Failed to connect';
-            setConnectMessage({ type: 'error', text: errorMsg });
-            setTimeout(() => setConnectMessage(null), 3000);
-        } finally {
-            setConnectLoading(false);
-        }
-    };
-
-    // Auto-connect after login
-    useEffect(() => {
-        if (isAuthenticated && localStorage.getItem('pendingConnectSlug') === slug) {
-            localStorage.removeItem('pendingConnectSlug');
-            performConnect();
-        }
-    }, [isAuthenticated, slug]);
 
     const isOwnVCard = isAuthenticated && user && user._id === currentUserId;
 
