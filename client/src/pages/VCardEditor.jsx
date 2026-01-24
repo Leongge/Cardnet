@@ -10,7 +10,7 @@ const VCardEditor = () => {
         company_name: '',
         company_address: '',
         company_website: '',
-        email: '',
+        vcard_email: '',
         phone: '',
         bio: '',
         vcard_slug: '',
@@ -414,8 +414,8 @@ const VCardEditor = () => {
                                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Email</label>
                                         <input
                                             type="email"
-                                            name="email"
-                                            value={formData.email}
+                                            name="vcard_email"
+                                            value={formData.vcard_email}
                                             onChange={handleChange}
                                             className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-slate-400"
                                             placeholder="you@company.com"
@@ -736,14 +736,14 @@ const VCardEditor = () => {
                                         </div>
                                     )}
 
-                                    {formData.email && formData.email.trim() !== '' && (
+                                    {formData.vcard_email && formData.vcard_email.trim() !== '' && (
                                         <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl">
                                             <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-slate-700 border border-slate-200 shadow-sm">
                                                 <Mail size={14} />
                                             </div>
                                             <div className="flex-1">
                                                 <p className="text-[9px] text-slate-400 uppercase font-bold tracking-wider mb-0.5">Email</p>
-                                                <p className="text-slate-800 font-medium text-xs">{formData.email}</p>
+                                                <p className="text-slate-800 font-medium text-xs">{formData.vcard_email}</p>
                                             </div>
                                             <ChevronRight size={14} className="text-slate-300" />
                                         </div>

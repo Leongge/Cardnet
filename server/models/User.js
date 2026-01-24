@@ -13,6 +13,7 @@ const UserSchema = new mongoose.Schema({
     biometric_key: { type: String }, // Placeholder for WebAuthn public key
     vcard_slug: { type: String, unique: true },
     // VCard Profile Fields
+    vcard_email: { type: String }, // Email to display on vCard (can be different from login email)
     position: { type: String },
     phone: { type: String },
     company_name: { type: String },

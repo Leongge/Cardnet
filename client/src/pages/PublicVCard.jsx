@@ -93,7 +93,7 @@ const PublicVCard = () => {
 
     const {
         name, position, company_name, company_address, company_website,
-        email, phone, bio, profile_picture, background_picture, social_links,
+        vcard_email, phone, bio, profile_picture, background_picture, social_links,
         design_config
     } = user;
 
@@ -118,7 +118,7 @@ FN:${name}
 TITLE:${position}
 ORG:${company_name}
 TEL;TYPE=CELL:${phone}
-EMAIL:${email}
+EMAIL:${vcard_email || ''}
 URL:${company_website}
 ADR;TYPE=WORK:;;${company_address};;;;
 END:VCARD`;
@@ -287,14 +287,14 @@ END:VCARD`;
                             </a>
                         )}
 
-                        {email && email.trim() !== '' && (
-                            <a href={`mailto:${email}`} className="flex items-center gap-4 p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-white hover:shadow-md hover:border-slate-200 transition-all group">
+                        {vcard_email && vcard_email.trim() !== '' && (
+                            <a href={`mailto:${vcard_email}`} className="flex items-center gap-4 p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-white hover:shadow-md hover:border-slate-200 transition-all group">
                                 <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-slate-700 border border-slate-200 group-hover:text-amber-600 transition-colors shadow-sm">
                                     <Mail size={18} />
                                 </div>
                                 <div className="flex-1">
                                     <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-0.5">Email</p>
-                                    <p className="text-slate-800 font-medium">{email}</p>
+                                    <p className="text-slate-800 font-medium">{vcard_email}</p>
                                 </div>
                                 <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500 transition-colors" />
                             </a>

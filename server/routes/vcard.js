@@ -165,7 +165,7 @@ router.put('/profile', async (req, res) => {
 
         // Validate updateData
         const allowedUpdates = [
-            'name', 'position', 'phone', 'email', 'company_name', 'company_address',
+            'name', 'position', 'phone', 'vcard_email', 'company_name', 'company_address',
             'company_website', 'bio', 'profile_picture', 'background_picture', 'social_links', 'theme_color', 'vcard_slug', 'url_slug' // Added url_slug just in case
         ];
 
