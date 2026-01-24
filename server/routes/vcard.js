@@ -165,7 +165,7 @@ router.put('/profile', async (req, res) => {
 
         // Validate updateData
         const allowedUpdates = [
-            'name', 'position', 'phone', 'company_name', 'company_address',
+            'name', 'position', 'phone', 'email', 'company_name', 'company_address',
             'company_website', 'bio', 'profile_picture', 'background_picture', 'social_links', 'theme_color', 'vcard_slug', 'url_slug' // Added url_slug just in case
         ];
 
@@ -187,12 +187,45 @@ router.put('/profile', async (req, res) => {
         // Get current user to check if slug is changing
         const currentUser = await User.findById(userId);
 
-        // Check if slug is taken (only if it's different from current slug)
+        // Validate and check vcard_slug
         if (actualUpdates.vcard_slug && actualUpdates.vcard_slug !== currentUser.vcard_slug) {
-            const existing = await User.findOne({ vcard_slug: actualUpdates.vcard_slug });
+            const slug = actualUpdates.vcard_slug;
+
+            // 1. Format validation: only alphanumeric, hyphens, and underscores
+            const slugRegex = /^[a-zA-Z0-9_-]+$/;
+            if (!slugRegex.test(slug)) {
+                log(`Invalid slug format: ${slug}`);
+                return res.status(400).json({
+                    message: 'Username can only contain letters, numbers, hyphens, and underscores'
+                });
+            }
+
+            // 2. Length validation: 3-30 characters
+            if (slug.length < 3 || slug.length > 30) {
+                log(`Invalid slug length: ${slug.length}`);
+                return res.status(400).json({
+                    message: 'Username must be between 3 and 30 characters'
+                });
+            }
+
+            // 3. Reserved words check
+            const reservedWords = ['admin', 'api', 'profile', 'login', 'register', 'dashboard', 'settings', 'vcard', 'connect', 'design', 'upload'];
+            if (reservedWords.includes(slug.toLowerCase())) {
+                log(`Reserved slug attempted: ${slug}`);
+                return res.status(400).json({
+                    message: 'This username is reserved and cannot be used'
+                });
+            }
+
+            // 4. Check if slug is taken (case-insensitive)
+            const existing = await User.findOne({
+                vcard_slug: { $regex: new RegExp(`^${slug}$`, 'i') }
+            });
             if (existing) {
-                log(`Slug ${actualUpdates.vcard_slug} taken by another user`);
-                return res.status(400).json({ message: 'Slug already taken' });
+                log(`Slug ${slug} already taken by another user`);
+                return res.status(400).json({
+                    message: 'This username is already taken. Please choose another one.'
+                });
             }
         }
 

@@ -52,4 +52,11 @@ const UserSchema = new mongoose.Schema({
     theme_color: { type: String, default: '#3b82f6' } // Default to blue-500
 }, { timestamps: true });
 
+// Create a case-insensitive unique index for vcard_slug
+UserSchema.index({ vcard_slug: 1 }, {
+    unique: true,
+    sparse: true,
+    collation: { locale: 'en', strength: 2 } // Case-insensitive
+});
+
 module.exports = mongoose.model('User', UserSchema);

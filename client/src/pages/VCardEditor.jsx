@@ -736,7 +736,7 @@ const VCardEditor = () => {
                                         </div>
                                     )}
 
-                                    {formData.email && (
+                                    {formData.email && formData.email.trim() !== '' && (
                                         <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl">
                                             <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-slate-700 border border-slate-200 shadow-sm">
                                                 <Mail size={14} />

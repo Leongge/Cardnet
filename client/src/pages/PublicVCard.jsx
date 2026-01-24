@@ -287,7 +287,7 @@ END:VCARD`;
                             </a>
                         )}
 
-                        {email && (
+                        {email && email.trim() !== '' && (
                             <a href={`mailto:${email}`} className="flex items-center gap-4 p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-white hover:shadow-md hover:border-slate-200 transition-all group">
                                 <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-slate-700 border border-slate-200 group-hover:text-amber-600 transition-colors shadow-sm">
                                     <Mail size={18} />
